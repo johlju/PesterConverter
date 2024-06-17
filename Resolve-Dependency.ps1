@@ -301,7 +301,6 @@ if ($UsePSResourceGet)
             }
 
             $invokeWebRequestParameters = @{
-                # TODO: Should support proxy parameters passed to the script.
                 Uri         = $psResourceGetUri
                 OutFile     = "$PSDependTarget/$psResourceGetModuleName.nupkg" # cSpell: ignore nupkg
                 ErrorAction = 'Stop'
@@ -993,7 +992,6 @@ try
                 Path  = $DependencyFile
             }
 
-            # TODO: Handle when the Dependency file is in YAML, and -WithYAML is specified.
             Invoke-PSDepend @psDependParameters
 
             Write-Progress -Activity 'PSDepend:' -PercentComplete 100 -CurrentOperation 'Dependencies restored' -Completed
