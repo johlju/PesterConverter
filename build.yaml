@@ -44,8 +44,7 @@ BuildWorkflow:
 CopyPaths:
   - en-US
   - Modules
-#Prefix: prefix.ps1
-#Suffix: suffix.ps1
+Prefix: prefix.ps1
 Encoding: UTF8
 VersionedOutputDirectory: true
 BuiltModuleSubdirectory: builtModule
