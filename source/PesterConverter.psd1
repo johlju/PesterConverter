@@ -18,7 +18,7 @@
     Copyright            = '(c) Viscalyx. All rights reserved.'
 
     # Description of the functionality provided by this module
-    Description          = 'Commands ta convert Pester tests formatting.'
+    Description          = 'Commands ta convert Pester tests syntax.'
 
     # Minimum version of the PowerShell engine required by this module
     PowerShellVersion    = '7.0'
