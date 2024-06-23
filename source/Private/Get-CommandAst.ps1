@@ -1,8 +1,8 @@
 # TODO: Add comment-based help
-function Get-PesterCommandAst
+function Get-CommandAst
 {
     [CmdletBinding()]
-    [OutputType([System.Management.Automation.Language.CommandAst])]
+    [OutputType([System.Management.Automation.Language.CommandAst[]])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]

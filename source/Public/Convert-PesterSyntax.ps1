@@ -81,7 +81,7 @@ function Convert-PesterSyntax
 
             $scriptBlockAst.Extent.Text
 
-            $shouldCommandAst = $scriptBlockAst | Get-PesterCommandAst -CommandName 'Should'
+            $shouldCommandAst = $scriptBlockAst | Get-CommandAst -CommandName 'Should'
 
             $shouldCommandAst
 
@@ -103,8 +103,15 @@ function Convert-PesterSyntax
                         Skicka Negated och filtrerad CommandAst till Switch-ShouldBe, som returnerar ny Sträng som ersätter Extent på hela  CommandAst
                     #>
 
-                    $newExtentText = Switch-ShouldBe -CommandAst $commandAst -ToVersion $pesterVersion
+                    switch (Get-ShouldCommandOperatorName -CommandAst $commandAst)
+                    {
+                        'Be'
+                        {
+                            $newExtentText = Switch-ShouldBe -CommandAst $commandAst -Pester6 -NoCommandAlias $NoCommandAlias -UseNamedParameters $UseNamedParameters
+                        }
+                    }
 
+                    $newExtentText
 <#
                     # Replace the original extent text in $scriptBlockAst.Extent with the new extent text using the offsets of the commandAst.Extent
 

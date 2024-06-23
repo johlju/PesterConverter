@@ -42,7 +42,7 @@ AfterAll {
     Get-Module -Name $script:dscModuleName -All | Remove-Module -Force
 }
 
-Describe 'Get-PesterCommandAst' {
+Describe 'Get-CommandAst' {
     It 'Should return the correct CommandAst for Should -Be $true' {
         InModuleScope -ScriptBlock {
             $mockAst = {
@@ -52,7 +52,7 @@ Describe 'Get-PesterCommandAst' {
                     }
             }.Ast
 
-            $result = Get-PesterCommandAst -Ast $mockAst -CommandName 'Should'
+            $result = Get-CommandAst -Ast $mockAst -CommandName 'Should'
 
             $result | Should-HaveType ([System.Management.Automation.Language.CommandAst])
             $result.CommandElements[0].Value | Should-Be 'Should'
@@ -74,7 +74,7 @@ Describe 'Get-PesterCommandAst' {
                     }
             }.Ast
 
-            $result = Get-PesterCommandAst -Ast $mockAst -CommandName 'Should'
+            $result = Get-CommandAst -Ast $mockAst -CommandName 'Should'
 
             $result | Should-HaveType ([System.Management.Automation.Language.CommandAst])
             $result.CommandElements[0].Value | Should-Be 'Should'
@@ -100,7 +100,7 @@ Describe 'Get-PesterCommandAst' {
                     }
             }.Ast
 
-            $result = Get-PesterCommandAst -Ast $mockAst -CommandName 'Should'
+            $result = Get-CommandAst -Ast $mockAst -CommandName 'Should'
 
             $result.Count | Should-Be 2
 
