@@ -25,6 +25,7 @@
 #>
 function Test-CommandElementIsPositional
 {
+    # TODO: This command might not be needed. It might have been done obsolete.
     [CmdletBinding()]
     [OutputType([System.Boolean])]
     param
@@ -35,12 +36,12 @@ function Test-CommandElementIsPositional
 
         [Parameter()]
         [System.Management.Automation.SwitchParameter]
-        $FirstElement
+        $First
     )
 
     $result = $false
 
-    if ($FirstElement.IsPresent)
+    if ($First.IsPresent)
     {
         $result = $commandAst.CommandElements[0] -is [System.Management.Automation.Language.VariableExpressionAst]
     }

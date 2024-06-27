@@ -42,17 +42,17 @@ AfterAll {
     Get-Module -Name $script:dscModuleName -All | Remove-Module -Force
 }
 
-Describe 'Switch-ShouldBe' {
+Describe 'Convert-ShouldBe' {
     Context 'When converting Pester 5 syntax to Pester 6 syntax' {
         BeforeAll {
             InModuleScope -ScriptBlock {
-                $PSDefaultParameterValues['Switch-ShouldBe:Pester6'] = $true
+                $PSDefaultParameterValues['Convert-ShouldBe:Pester6'] = $true
             }
         }
 
         AfterAll {
             InModuleScope -ScriptBlock {
-                $PSDefaultParameterValues.Remove('Switch-ShouldBe:Pester6')
+                $PSDefaultParameterValues.Remove('Convert-ShouldBe:Pester6')
             }
         }
 
@@ -62,9 +62,9 @@ Describe 'Switch-ShouldBe' {
                     Should -Be 1
                 }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5 -NoCommandAlias
+                $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -NoCommandAlias
 
-                $result | Should -BeExactly 'Assert-Equal 1'
+                $result | Should-BeString -CaseSensitive 'Assert-Equal 1'
             }
         }
 
@@ -74,9 +74,9 @@ Describe 'Switch-ShouldBe' {
                     Should -Be 1
                 }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                $result | Should -BeExactly 'Should-Be 1'
+                $result | Should-BeString -CaseSensitive 'Should-Be 1'
             }
         }
 
@@ -87,9 +87,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be 1
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be 1'
+                    $result | Should-BeString -CaseSensitive 'Should-Be 1'
                 }
             }
 
@@ -99,21 +99,21 @@ Describe 'Switch-ShouldBe' {
                         Should -Be "AnyString"
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be "AnyString"'
+                    $result | Should-BeString -CaseSensitive 'Should-Be "AnyString"'
                 }
             }
 
-            It "Should convert ``Should -Be 'AnyString'`` correctly" {
+            It 'Should convert `Should -Be ''AnyString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
                         Should -Be 'AnyString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly "Should-Be 'AnyString'"
+                    $result | Should-BeString -CaseSensitive "Should-Be 'AnyString'"
                 }
             }
 
@@ -123,9 +123,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be $true'
+                    $result | Should-BeString -CaseSensitive 'Should-Be $true'
                 }
             }
 
@@ -135,9 +135,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be $anyValue
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be $anyValue'
+                    $result | Should-BeString -CaseSensitive 'Should-Be $anyValue'
                 }
             }
 
@@ -147,9 +147,9 @@ Describe 'Switch-ShouldBe' {
                         Should -ActualValue $true -Be $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be -Actual $true $true'
+                    $result | Should-BeString -CaseSensitive 'Should-Be $true -Actual $true'
                 }
             }
 
@@ -159,9 +159,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be $true -ActualValue $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be -Actual $true $true'
+                    $result | Should-BeString -CaseSensitive 'Should-Be $true -Actual $true'
                 }
             }
 
@@ -171,9 +171,9 @@ Describe 'Switch-ShouldBe' {
                         Should -ActualValue $true -Be -ExpectedValue $false
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $false'
                 }
             }
 
@@ -183,9 +183,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be -ActualValue $true -ExpectedValue $false
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $false'
                 }
             }
 
@@ -195,9 +195,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be -ExpectedValue $false -ActualValue $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Expected $false -Actual $true'
                 }
             }
 
@@ -207,9 +207,9 @@ Describe 'Switch-ShouldBe' {
                         Should -ExpectedValue $false -Be -ActualValue $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Expected $false -Actual $true'
                 }
             }
 
@@ -219,9 +219,21 @@ Describe 'Switch-ShouldBe' {
                         Should -ExpectedValue $false -ActualValue $true -Be
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-Be -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Expected $false -Actual $true'
+                }
+            }
+
+            It 'Should convert `Should -Not:$false -Be $false` correctly' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAstPester5 = {
+                        $false | Should -Not:$false -Be $false
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
+
+                    $result | Should-BeString -CaseSensitive 'Should-Be $false'
                 }
             }
         }
@@ -233,9 +245,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Not -Be 1
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe 1'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe 1'
                 }
             }
 
@@ -245,9 +257,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be 1 -Not
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe 1'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe 1'
                 }
             }
 
@@ -257,21 +269,21 @@ Describe 'Switch-ShouldBe' {
                         Should -Not -Be "AnyString"
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe "AnyString"'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe "AnyString"'
                 }
             }
 
-            It "Should convert ``Should -Not -Be 'AnyString'`` correctly" {
+            It 'Should convert `Should -Not -Be ''AnyString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
                         Should -Not -Be 'AnyString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly "Should-NotBe 'AnyString'"
+                    $result | Should-BeString -CaseSensitive "Should-NotBe 'AnyString'"
                 }
             }
 
@@ -281,9 +293,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Not -Be $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe $true'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $true'
                 }
             }
 
@@ -293,9 +305,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Not -Be $anyValue
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe $anyValue'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $anyValue'
                 }
             }
 
@@ -305,9 +317,9 @@ Describe 'Switch-ShouldBe' {
                         $false | Should -Be $true -Not
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe $true'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $true'
                 }
             }
 
@@ -317,34 +329,21 @@ Describe 'Switch-ShouldBe' {
                         $false | Should -Not:$true -Be $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe $true'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $true'
                 }
             }
 
-            It 'Should convert `Should -Not:$false -Be $false` correctly' {
-                InModuleScope -ScriptBlock {
-                    $mockCommandAstPester5 = {
-                        $false | Should -Not:$false -Be $false
-                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
-
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
-
-                    $result | Should -BeExactly 'Should-Be $false'
-                }
-            }
-
-            # Should -Not -ActualValue $true -Be $false
             It 'Should convert `Should -Not -ActualValue $true -Be $false` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
                         Should -Not -ActualValue $true -Be $false
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $false -Actual $true'
                 }
             }
 
@@ -354,9 +353,9 @@ Describe 'Switch-ShouldBe' {
                         Should -ActualValue $true -Not -Be $false
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $false -Actual $true'
                 }
             }
 
@@ -366,9 +365,9 @@ Describe 'Switch-ShouldBe' {
                         Should -ActualValue $true -Be $false -Not
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $false -Actual $true'
                 }
             }
 
@@ -378,9 +377,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be $false -ActualValue $true -Not
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $false -Actual $true'
                 }
             }
 
@@ -390,9 +389,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Be $false -Not -ActualValue $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $false -Actual $true'
                 }
             }
 
@@ -402,9 +401,9 @@ Describe 'Switch-ShouldBe' {
                         Should -Not -Be $false -ActualValue $true
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe $false -Actual $true'
                 }
             }
 
@@ -414,9 +413,9 @@ Describe 'Switch-ShouldBe' {
                         Should -ActualValue $true -Be -Not -ExpectedValue $false
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe -Actual $true -Expected $false'
                 }
             }
 
@@ -426,9 +425,9 @@ Describe 'Switch-ShouldBe' {
                         Should -ActualValue $true -Not -Be -ExpectedValue $false
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe -Actual $true -Expected $false'
                 }
             }
 
@@ -438,24 +437,91 @@ Describe 'Switch-ShouldBe' {
                         Should -ActualValue $true -Be -ExpectedValue $false -Not
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    $result = Switch-ShouldBe -CommandAst $mockCommandAstPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should -BeExactly 'Should-NotBe -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBe -Actual $true -Expected $false'
                 }
             }
         }
 
-        # It 'Should handle positional parameters correctly' {
-        #     InModuleScope -ScriptBlock {
-        #         # Assuming Test-CommandElementIsPositional and Switch-ShouldBe are updated to handle positional parameters
-        #         $mockCommandAstPositionalPester5 = {
-        #             Should -Be 1
-        #         }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+        Context 'When tests should always use named parameters' {
+            It 'Should convert `Should -Be $true -ActualValue $true` correctly' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAstPester5 = {
+                        Should -Be $true -ActualValue $true
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-        #         $result = Switch-ShouldBe -CommandAst $mockCommandAstPositionalPester5
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UseNamedParameters
 
-        #         $result | Should -BeExactly 'Should-Be 1'
-        #     }
-        # }
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Expected $true -Actual $true'
+                }
+            }
+        }
+
+        Context 'When tests should always use positional parameters' {
+            Context 'When the tests are affirming' {
+                It 'Should convert `Should -Be $true -ActualValue $true` correctly' {
+                    InModuleScope -ScriptBlock {
+                        $mockCommandAstPester5 = {
+                            Should -Be $true -ActualValue $true
+                        }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                        $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UsePositionalParameters
+
+                        $result | Should-BeString -CaseSensitive 'Should-Be $true $true'
+                    }
+                }
+
+                It 'Should convert `Should -Be $true -ActualValue $true -Because "this must return true"` correctly' {
+                    InModuleScope -ScriptBlock {
+                        $mockCommandAstPester5 = {
+                            Should -Be $true -ActualValue $true -Because "this must return true"
+                        }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                        $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UsePositionalParameters
+
+                        $result | Should-BeString -CaseSensitive 'Should-Be $true $true -Because "this must return true"'
+                    }
+                }
+
+                It 'Should convert `Should -Be $true -Because "this must return true" -ActualValue $true` correctly' {
+                    InModuleScope -ScriptBlock {
+                        $mockCommandAstPester5 = {
+                            Should -Be $true -Because "this must return true" -ActualValue $true
+                        }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                        $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UsePositionalParameters
+
+                        $result | Should-BeString -CaseSensitive 'Should-Be $true -Because "this must return true" $true'
+                    }
+                }
+
+                It 'Should convert `Should -Because "this must return true" -ActualValue $true -Be $true` correctly' {
+                    InModuleScope -ScriptBlock {
+                        $mockCommandAstPester5 = {
+                            Should -Because "this must return true" -ActualValue $true -Be $true
+                        }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                        $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UsePositionalParameters
+
+                        $result | Should-BeString -CaseSensitive 'Should-Be $true -Because "this must return true" $true'
+                    }
+                }
+            }
+
+            Context 'When the tests are negated' {
+                It 'Should convert `Should -Be $true -ActualValue $true -Because "this must return true" -Not` correctly' {
+                    InModuleScope -ScriptBlock {
+                        $mockCommandAstPester5 = {
+                            Should -Be $true -ActualValue $true -Because "this must return true" -Not
+                        }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                        $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UsePositionalParameters
+
+                        $result | Should-BeString -CaseSensitive 'Should-NotBe $true $true -Because "this must return true"'
+                    }
+                }
+            }
+        }
     }
 }

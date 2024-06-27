@@ -14,6 +14,13 @@
         Specifies that the syntax to convert to is Pester 6. This parameter is
         mandatory to convert to Pester 6 syntax.
 
+    .PARAMETER UseNamedParameters
+        Specifies whether to use named parameters in the converted syntax.
+
+    .PARAMETER UsePositionalParameters
+        Specifies whether to use positional parameters in the converted syntax,
+        where supported.
+
     .EXAMPLE
         Convert-PesterSyntax -Path "C:\Scripts\Test.ps1" -Pester6
 
@@ -46,7 +53,11 @@ function Convert-PesterSyntax
 
         [Parameter()]
         [System.Management.Automation.SwitchParameter]
-        $UseNamedParameters
+        $UseNamedParameters,
+
+        [Parameter()]
+        [System.Management.Automation.SwitchParameter]
+        $UsePositionalParameters
     )
 
     begin
@@ -100,14 +111,19 @@ function Convert-PesterSyntax
                     <#
                         Split-CommandAst
 
-                        Skicka Negated och filtrerad CommandAst till Switch-ShouldBe, som returnerar ny Sträng som ersätter Extent på hela  CommandAst
+                        Skicka Negated och filtrerad CommandAst till Convert-ShouldBe, som returnerar ny Sträng som ersätter Extent på hela  CommandAst
                     #>
 
                     switch (Get-ShouldCommandOperatorName -CommandAst $commandAst)
                     {
                         'Be'
                         {
-                            $newExtentText = Switch-ShouldBe -CommandAst $commandAst -Pester6 -NoCommandAlias $NoCommandAlias -UseNamedParameters $UseNamedParameters
+                            $newExtentText = Convert-ShouldBe -CommandAst $commandAst -Pester6 -NoCommandAlias $NoCommandAlias -UseNamedParameters $UseNamedParameters
+                        }
+
+                        'BeExactly'
+                        {
+                            $newExtentText = Convert-ShouldBeExactly -CommandAst $commandAst -Pester6 -NoCommandAlias $NoCommandAlias -UseNamedParameters $UseNamedParameters
                         }
                     }
 

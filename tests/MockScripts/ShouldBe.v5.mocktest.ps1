@@ -80,4 +80,20 @@ Describe 'ShouldBe' {
     # It 'Should be true' {
     #     Should -Be $true $true
     # }
+
+    It 'Should be true (v6)' {
+        Should-Be 'a' 'a'
+    }
+
+    It 'Should be true (v6)' {
+        Should-Be 'a' 'a' -Because 'a should equal a'
+    }
+
+    It 'Should be true (v6)' {
+        Should-Be 'a' -Because 'a should equal a' 'a'
+    }
+
+    It 'Should be true (v6)' {
+        Should-Be -Because 'a should equal a' 'a' 'a'
+    }
 }
