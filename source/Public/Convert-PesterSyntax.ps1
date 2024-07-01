@@ -62,15 +62,17 @@ function Convert-PesterSyntax
 
     begin
     {
-        if ($PSCmdlet.ParameterSetName -eq 'Pester6')
+        $convertParameters = @{} + $PSBoundParameters
+        $convertParameters.Remove('Path')
+
+        if ($PSCmdlet.ParameterSetName -eq 'Pester6' -and -not $Pester6.IsPresent)
         {
             $Pester6 = $true
+            $convertParameters.Pester6 = $true
         }
 
         if ($Pester6)
         {
-            $pesterVersion = 6
-
             Write-Verbose 'Converting to Pester 6 syntax.'
         }
         else
@@ -88,63 +90,62 @@ function Convert-PesterSyntax
                 $filePath = Convert-Path -Path $filePath
             }
 
-            $scriptBlockAst = $filePath | Get-AstDefinition
+            $scriptBlockAst = $filePath | Get-AstDefinition -ErrorAction 'Stop'
 
-            $scriptBlockAst.Extent.Text
+            Write-Debug -Message ('Parsing the script block AST: {0}' -f $scriptBlockAst.Extent.Text)
 
-            $shouldCommandAst = $scriptBlockAst | Get-CommandAst -CommandName 'Should'
-
-            $shouldCommandAst
+            $shouldCommandAst = $scriptBlockAst | Get-CommandAst -CommandName 'Should' -ErrorAction 'Stop'
 
             if ($shouldCommandAst)
             {
-                # $syntaxConversion = @()
+                #$shouldCommandAst
+
+                Write-Debug -Message ('Found {0} ''Should'' command(s) in {1}.' -f $shouldCommandAst.Count, $filePath)
 
                 foreach ($commandAst in $shouldCommandAst)
                 {
-                    <#
-                        Loop through each command parameter in commandAst where the
-                        element is of type CommandParameterAst and add the parameter
-                        names and potential value to a temporary parameter hashtable.
-                    #>
+                    $operatorName = Get-ShouldCommandOperatorName -CommandAst $commandAst -ErrorAction 'Stop'
 
-                    <#
-                        Split-CommandAst
-
-                        Skicka Negated och filtrerad CommandAst till Convert-ShouldBe, som returnerar ny Sträng som ersätter Extent på hela  CommandAst
-                    #>
-
-                    switch (Get-ShouldCommandOperatorName -CommandAst $commandAst)
+                    if ($operatorName)
                     {
-                        'Be'
+                        switch ($operatorName)
                         {
-                            $newExtentText = Convert-ShouldBe -CommandAst $commandAst -Pester6 -NoCommandAlias $NoCommandAlias -UseNamedParameters $UseNamedParameters
+                            'Be'
+                            {
+                                $newExtentText = Convert-ShouldBe -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                            }
+
+                            'BeExactly'
+                            {
+                                $newExtentText = Convert-ShouldBeExactly -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                            }
+
+                            default
+                            {
+                                Write-Warning -Message ('Unsupported command operator ''{0}'' in extent `{1}`.' -f $operatorName, $commandAst.Extent.Text)
+                            }
                         }
 
-                        'BeExactly'
-                        {
-                            $newExtentText = Convert-ShouldBeExactly -CommandAst $commandAst -Pester6 -NoCommandAlias $NoCommandAlias -UseNamedParameters $UseNamedParameters
-                        }
+                        #$newExtentText
                     }
 
-                    $newExtentText
 <#
                     # Replace the original extent text in $scriptBlockAst.Extent with the new extent text using the offsets of the commandAst.Extent
 
                     # Assuming $scriptBlockAst and $commandAst are already defined AST objects
-                    # And $newText contains the text you want to insert
+                    # And $newExtentText contains the text you want to insert
 
                     # 1. Get start and end offsets of commandAst.Extent
                     $startOffset = $commandAst.Extent.StartOffset
                     $endOffset = $commandAst.Extent.EndOffset
 
-                    # 2. Assuming $newText is already defined
+                    # 2. Assuming $newExtentText is already defined
 
                     # 3. Get the entire script text
                     $scriptText = $scriptBlockAst.Extent.Text
 
                     # 4. Replace the portion of the script text
-                    $modifiedScriptText = $scriptText.Remove($startOffset, $endOffset - $startOffset).Insert($startOffset, $newText)
+                    $modifiedScriptText = $scriptText.Remove($startOffset, $endOffset - $startOffset).Insert($startOffset, $newExtentText)
 
                     # 5. Optionally, re-parse the modified script text if needed
                     $modifiedScriptBlockAst = [System.Management.Automation.Language.Parser]::ParseInput($modifiedScriptText, [ref]$null, [ref]$null)
@@ -167,38 +168,40 @@ function Convert-PesterSyntax
 
                     #$commandParameterAst
 
-                    $parameters = @()
+                    # $parameters = @()
 
-                    foreach ($parameter in $commandParameterAst)
-                    {
-                        switch ($parameter)
-                        {
-                            { $_ -is [System.Management.Automation.Language.VariableExpressionAst] }
-                            {
-                                # Add the value to the previously added parameter.
-                                $parameters[-1].ParameterValue = $parameter.Extent.Text
-                            }
+                    # foreach ($parameter in $commandParameterAst)
+                    # {
+                    #     switch ($parameter)
+                    #     {
+                    #         { $_ -is [System.Management.Automation.Language.VariableExpressionAst] }
+                    #         {
+                    #             # Add the value to the previously added parameter.
+                    #             $parameters[-1].ParameterValue = $parameter.Extent.Text
+                    #         }
 
-                            { $_ -is [System.Management.Automation.Language.CommandParameterAst] }
-                            {
-                                $newParameter = [PSCustomObject] @{
-                                    ParameterName = $parameter.ParameterName
-                                    ParameterValue = $null
-                                }
+                    #         { $_ -is [System.Management.Automation.Language.CommandParameterAst] }
+                    #         {
+                    #             $newParameter = [PSCustomObject] @{
+                    #                 ParameterName = $parameter.ParameterName
+                    #                 ParameterValue = $null
+                    #             }
 
-                                $parameters += $newParameter
-                            }
+                    #             $parameters += $newParameter
+                    #         }
 
-                            default
-                            {
-                                throw "Unknown parameter type $($_)."
-                            }
-                        }
-                    }
+                    #         default
+                    #         {
+                    #             throw "Unknown parameter type $($_)."
+                    #         }
+                    #     }
+                    # }
 
                     #$parameters
 
                     # $commandParameterAst = $commandAst.CommandElements[1]
+
+                    # $syntaxConversion = @()
 
                     # switch ($commandParameterAst.ParameterName)
                     # {

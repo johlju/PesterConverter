@@ -76,9 +76,17 @@ Describe 'ShouldBe' {
     #     Should $true -BeTrue
     # }
 
-    # This is not allowed syntax
-    # It 'Should be true' {
-    #     Should -Be $true $true
+    It 'Should be false' {
+        Should -Be $false 'because mock should test correct value' $false
+    }
+
+    It 'Should be false' {
+        Should -BeExactly 'AnyString' 'because mock should test correct value' 'AnyString'
+    }
+
+    # This is not allowed syntax, it generates an array of values 'a' and 'b' that cannot be compared to a single value
+    # It 'Should be false' {
+    #     Should -Be @('a', 'b') 'because mock should test correct value' 'a' 'b'
     # }
 
     It 'Should be true (v6)' {
@@ -96,4 +104,48 @@ Describe 'ShouldBe' {
     It 'Should be true (v6)' {
         Should-Be -Because 'a should equal a' 'a' 'a'
     }
+
+    It 'Should throw' {
+        { throw 'hej' } | Should -Throw
+    }
+
+    It 'Should throw' {
+        { throw 'hej' } | Should -Throw -Because 'Expected to throw'
+    }
+
+    It 'Should throw' {
+        { throw 'hej' } | Should -Throw -Because 'Expected to throw' -ErrorId 'hej'
+    }
+
+    It 'Should throw' {
+        { throw 'hej' } | Should -Throw -Because 'Expected to throw' -ErrorId 'hej' -ExpectedMessage 'hej'
+    }
+
+    It 'Should throw' {
+        { throw 'hej' } | Should -Throw -Because 'Expected to throw' -ErrorId 'hej' -ExpectedMessage 'hej' -ExceptionType ([Exception])
+    }
+
+    It 'Should throw' {
+        { 1+1 } | Should -Throw -Because 'Expected to throw' -ErrorId 'hej' -ExpectedMessage 'hej' -ExceptionType ([Exception]) -Not
+    }
+
+    It 'Should throw' {
+        $errorPassThru = ({ throw 'hej' } | Should -Throw -Because 'Expected to throw' -ErrorId 'hej' -ExpectedMessage 'hej' -ExceptionType ([Exception]) -PassThru)
+        $errorPassThru.Exception.Message | Should -Be 'hej'
+    }
+
+    It 'Should throw' {
+        { throw 'hej' } | Should -Throw 'hej'
+    }
+
+    It 'Should throw with actual value' {
+         Should -Throw 'hej' -ActualValue { throw 'hej' }
+    }
+
+    It 'Should throw' {
+        {
+            Write-Error -Message 'hej' -ErrorId 'MyErrorId' -Category InvalidOperation -TargetObject 'MyTargetObject' -ErrorAction 'Stop'
+        } | Should -Throw 'hej' 'MyErrorId' ([Microsoft.PowerShell.Commands.WriteErrorException]) 'the mock error should throw correct error'
+    }
+
 }

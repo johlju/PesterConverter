@@ -1,9 +1,9 @@
 <#
     .SYNOPSIS
-        Converts a command `Should -BeExactly` to the specified Pester syntax.
+        Converts a command `Should -Throw` to the specified Pester syntax.
 
     .DESCRIPTION
-        The Convert-ShouldBe function is used to convert a command `Should -BeExactly` to
+        The Convert-ShouldBe function is used to convert a command `Should -Throw` to
         the specified Pester syntax.
 
     .PARAMETER CommandAst
@@ -20,30 +20,44 @@
         where supported.
 
     .EXAMPLE
-        $commandAst = [System.Management.Automation.Language.Parser]::ParseInput('Should -BeExactly "Test"')
-        Convert-ShouldBeExactly -CommandAst $commandAst -Pester6
+        $commandAst = [System.Management.Automation.Language.Parser]::ParseInput('Should -Throw "Test"')
+        Convert-ShouldThrow -CommandAst $commandAst -Pester6
 
-        This example converts the `Should -BeExactly "Test"` command to Pester 6 syntax
+        This example converts the `Should -Throw "Test"` command to Pester 6 syntax
         without using command aliases.
 
     .NOTES
         Pester 5 Syntax:
-            Should -BeExactly [-ActualValue <Object>] [-Not] [[-ExpectedValue] <Object>] [-Because <Object>]
+            Should -Throw [-ActualValue <Object>] [[-ExpectedMessage] <string>] [[-ErrorId] <string>] [[-ExceptionType] <type>] [[-Because] <string>] [-Not] [-PassThru]
 
             Positional parameters:
-                Position 1: ExceptedValue
-                Position 2: Because
-                Position 2: ActualValue
+                Position 1: ExceptionMessage
+                Position 2: ErrorId
+                Position 3: ExceptionType
+                Position 4: Because
 
         Pester 6 Syntax:
-            Should-BeString [[-Actual] <Object>] [[-Expected] <String>] [-Because <String>] [-CaseSensitive] [-IgnoreWhitespace]
-            Should-NotBeString [[-Actual] <Object>] [[-Expected] <String>] [-Because <String>] [-CaseSensitive] [-IgnoreWhitespace]
+            Should-Throw [-ScriptBlock] <ScriptBlock> [[-ExceptionType] <Type>] [[-ExceptionMessage] <String>] [[-FullyQualifiedErrorId] <String>] [-AllowNonTerminatingError] [[-Because] <String>]
 
             Positional parameters:
-                Position 1: Expected
-                Position 2: Actual
+                Position 1: ScriptBlock
+                Position 2: ExceptionType
+                Position 3: ExceptionMessage
+                Position 4: FullyQualifiedErrorId
+                Position 5: Because
+
+        Conversion notes:
+            If the Pester 5 syntax does not have ActualValue as named parameter
+            then it is not possible to use positional parameters, if there is
+            pipeline input then it is not possible to convert to positional parameters.
+
+            Pester 5 syntax Pos 1 must be converted to Pos 3 in Pester 6 syntax
+            Pester 5 syntax Pos 2 must be converted to Pos 4 in Pester 6 syntax
+            Pester 5 syntax Pos 3 must be converted to Pos 2 in Pester 6 syntax
+            Pester 5 syntax Pos 4 must be converted to Pos 5 in Pester 6 syntax
+
 #>
-function Convert-ShouldBeExactly
+function Convert-ShouldThrow
 {
     [CmdletBinding()]
     [OutputType([System.String])]
@@ -69,7 +83,7 @@ function Convert-ShouldBeExactly
     # Determine if the command is negated
     $isNegated = Test-PesterCommandNegated -CommandAst $CommandAst
 
-    $sourceSyntaxVersion = Get-PesterCommandSyntaxVersion -CommandAst $CommandAst -CommandName 'Should' -ParameterName 'BeExactly'
+    $sourceSyntaxVersion = Get-PesterCommandSyntaxVersion -CommandAst $CommandAst -CommandName 'Should' -ParameterName 'Throw'
 
     # Parse the command elements and convert them to Pester 6 syntax
     if ($PSCmdlet.ParameterSetName -eq 'Pester6')
@@ -79,15 +93,13 @@ function Convert-ShouldBeExactly
         # Add the correct Pester command based on negation
         if ($isNegated)
         {
-            $newExtentText = 'Should-NotBeString'
+            # TODO: There is no negated version of Should-Throw in Pester 6 as of yet.
+            $newExtentText = 'Should-NotThrow'
         }
         else
         {
-            $newExtentText = 'Should-BeString'
+            $newExtentText = 'Should-Throw'
         }
-
-        # Always add the `-CaseSensitive` parameter since BeExactly was case-sensitive.
-        $newExtentText += ' -CaseSensitive'
 
         $commandElement = $CommandAst.CommandElements |
             Where-Object -FilterScript {
@@ -106,19 +118,19 @@ function Convert-ShouldBeExactly
         # TODO: Can the code below be turned into a function, maybe refactor the used one above?
 
         <#
-            Search for the parameter name "BeExactly" in the command elements and if the
+            Search for the parameter name "Throw" in the command elements and if the
             next element in the command elements array is a variable expression or
             constant expression, assign the next elements value to a variable
             $positionalExpectedValue.
 
-            Returns -1 if parameter 'BeExactly' is not found.
+            Returns -1 if parameter 'Throw' is not found.
         #>
         $parameterIndex = $commandElement.IndexOf(
             (
                 $commandElement |
                     Where-Object -FilterScript {
                         $_ -is [System.Management.Automation.Language.CommandParameterAst] `
-                        -and $_.ParameterName -eq 'BeExactly'
+                        -and $_.ParameterName -eq 'Throw'
                     }
             )
         )
@@ -174,7 +186,7 @@ function Convert-ShouldBeExactly
                     #$argument = $currentCommandElement.Argument.Extent.Text
 
                     # Parameters to be ignored.
-                    if ($parameterName -in @('BeExactly', 'Not'))
+                    if ($parameterName -in @('Throw', 'Not'))
                     {
                         continue
                     }

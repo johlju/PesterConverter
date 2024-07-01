@@ -12,10 +12,6 @@
     .PARAMETER Pester6
         Specifies that the command should be converted to Pester version 6 syntax.
 
-    .PARAMETER NoCommandAlias
-        Specifies that the command should not use command aliases in the converted
-        syntax. This parameter is only applicable when converting to Pester 6 syntax.
-
     .PARAMETER UseNamedParameters
         Specifies whether to use named parameters in the converted syntax.
 
@@ -34,11 +30,18 @@
         Pester 5 Syntax:
             Should -Be [-ActualValue <Object>] [-Not] [[-ExpectedValue] <Object>] [-Because <Object>]
 
+            Positional parameters:
+                Position 1: ExceptedValue
+                Position 2: Because
+                Position 2: ActualValue
+
         Pester 6 Syntax:
-            Should-Be [[-Actual] <Object>] [-Expected] <Object> [-Because <String>] - (Expected:Position 1, Actual:Position 2)
-            Assert-Equal [[-Actual] <Object>] [-Expected] <Object> [-Because <String>] - (Expected:Position 1, Actual:Position 2)
-            Should-NotBe [[-Actual] <Object>] [-Expected] <Object> [-Because <String>] - (Expected:Position 1, Actual:Position 2)
-            Assert-NotEqual [[-Actual] <Object>] [-Expected] <Object> [-Because <String>] - (Expected:Position 1, Actual:Position 2)
+            Should-Be [[-Actual] <Object>] [-Expected] <Object> [-Because <String>]
+            Should-NotBe [[-Actual] <Object>] [-Expected] <Object> [-Because <String>]
+
+            Positional parameters:
+                Position 1: Expected
+                Position 2: Actual
 #>
 function Convert-ShouldBe
 {
@@ -54,10 +57,6 @@ function Convert-ShouldBe
         [System.Management.Automation.SwitchParameter]
         $Pester6,
 
-        [Parameter(ParameterSetName = 'Pester6')]
-        [System.Management.Automation.SwitchParameter]
-        $NoCommandAlias,
-
         [Parameter()]
         [System.Management.Automation.SwitchParameter]
         $UseNamedParameters,
@@ -67,44 +66,27 @@ function Convert-ShouldBe
         $UsePositionalParameters
     )
 
+    Write-Debug -Message ('Parsing the command AST: {0}' -f $CommandAst.Extent.Text)
+
     # Determine if the command is negated
     $isNegated = Test-PesterCommandNegated -CommandAst $CommandAst
 
-    # TODO: Parse the command AST for the command name "Should" and if true, output a verbose message saying it assuming this is Pester v5
-    if ($CommandAst.CommandElements[0].Extent.Text -eq 'Should' -and $CommandAst.CommandElements.ParameterName -contains 'Be') {
-        $sourceSyntaxVersion = 5
-    }
+    $sourceSyntaxVersion = Get-PesterCommandSyntaxVersion -CommandAst $CommandAst -CommandName 'Should' -ParameterName 'Be'
 
     # Parse the command elements and convert them to Pester 6 syntax
     if ($PSCmdlet.ParameterSetName -eq 'Pester6')
     {
-        Write-Verbose -Message ('Converting from Pester v{0} to Pester v6 syntax.' -f $sourceSyntaxVersion)
+        Write-Debug -Message ('Converting from Pester v{0} to Pester v6 syntax.' -f $sourceSyntaxVersion)
 
         # Add the correct Pester command based on negation
         if ($isNegated)
         {
-            if ($NoCommandAlias.IsPresent)
-            {
-                $newExtentText = 'Assert-NotEqual'
-            }
-            else
-            {
-                $newExtentText = 'Should-NotBe'
-            }
+            $newExtentText = 'Should-NotBe'
         }
         else
         {
-            if ($NoCommandAlias.IsPresent)
-            {
-                $newExtentText = 'Assert-Equal'
-            }
-            else
-            {
-                $newExtentText = 'Should-Be'
-            }
+            $newExtentText = 'Should-Be'
         }
-
-        # TODO: Handle if the first element is positional
 
         $commandElement = $CommandAst.CommandElements |
             Where-Object -FilterScript {
@@ -124,9 +106,9 @@ function Convert-ShouldBe
 
         <#
             Search for the parameter name "Be" in the command elements and if the
-            next element in the command elements array is a variable expression or
-            constant expression, assign the next elements value to a variable
-            $positionalExpectedValue.
+            next element in the command elements array is a variable expression,
+            constant expression or ParenExpressionAst, assign the next elements
+            value to a variable $positionalExpectedValue.
 
             Returns -1 if parameter 'Be' is not found.
         #>
@@ -148,7 +130,8 @@ function Convert-ShouldBe
             $nextElement = $commandElement[$parameterIndex + 1]
 
             if ($nextElement -is [System.Management.Automation.Language.ConstantExpressionAst] `
-                -or $nextElement -is [System.Management.Automation.Language.VariableExpressionAst])
+                -or $nextElement -is [System.Management.Automation.Language.VariableExpressionAst] `
+                -or $nextElement -is [System.Management.Automation.Language.ParenExpressionAst])
             {
                 $positionalExpectedValue = $nextElement.Extent.Text
                 $positionalValueElement = $nextElement
@@ -189,6 +172,12 @@ function Convert-ShouldBe
                     $parameterName = $currentCommandElement.ParameterName
                     #$argument = $currentCommandElement.Argument.Extent.Text
 
+                    # Parameters to be ignored.
+                    if ($parameterName -in @('Be', 'Not'))
+                    {
+                        continue
+                    }
+
                     switch ($parameterName)
                     {
                         'ActualValue'
@@ -222,12 +211,18 @@ function Convert-ShouldBe
                         #
                         #     break
                         # }
+
+                        default
+                        {
+                            Write-Warning -Message "Unsupported command parameter '$parameterName' in extent '$($currentCommandElement.Extent.Text)'"
+                        }
                     }
                 }
 
                 {
                     $_ -is [System.Management.Automation.Language.ConstantExpressionAst] `
-                    -or $_ -is [System.Management.Automation.Language.VariableExpressionAst]
+                    -or $_ -is [System.Management.Automation.Language.VariableExpressionAst] `
+                    -or $_ -is [System.Management.Automation.Language.ParenExpressionAst]
                 }
                 {
 
