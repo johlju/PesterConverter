@@ -18,6 +18,26 @@ Describe 'ShouldBe' {
         $false | Should -BeFalse
     }
 
+    It 'Should be false' {
+        Should -BeFalse 'because mock should test correct value' $false
+    }
+
+    It 'Should be false' {
+        Should -BeFalse -Because 'because mock should test correct value' $false
+    }
+
+    It 'Should be false' {
+        Should -BeFalse $false -Because 'because mock should test correct value'
+    }
+
+    It 'Should be false' {
+        Should -BeFalse -Actual $false 'because mock should test correct value'
+    }
+
+    It 'Should be false' {
+        Should -BeFalse 'because mock should test correct value' -Actual $false
+    }
+
     # It 'Should be true' {
     #     $false | Should -Not -Be $true
     # }
@@ -77,11 +97,23 @@ Describe 'ShouldBe' {
     # }
 
     It 'Should be false' {
-        Should -Be $false 'because mock should test correct value' $false
+        Should -Be $false 'mock should test correct value' $false
+    }
+
+    It 'Should be false (with -Because)' {
+        Should -Be $false -Because 'mock should test correct value' $false
     }
 
     It 'Should be false' {
-        Should -BeExactly 'AnyString' 'because mock should test correct value' 'AnyString'
+        Should $false 'mock should test correct value' $false -Be
+    }
+
+    It 'Should be false' {
+        Should -BeExactly 'ExpectedString' 'mock should test correct value' 'ExpectedString'
+    }
+
+    It 'Should be false' {
+        Should -Be 'ExpectedString' 'mock should test correct value' 'ExpectedString'
     }
 
     # This is not allowed syntax, it generates an array of values 'a' and 'b' that cannot be compared to a single value

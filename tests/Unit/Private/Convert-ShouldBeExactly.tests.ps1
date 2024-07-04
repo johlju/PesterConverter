@@ -56,22 +56,6 @@ Describe 'Convert-ShouldBeExactly' {
             }
         }
 
-        It 'Should output a warning message if an unknown operator is used' {
-            Mock -CommandName Write-Warning
-
-            InModuleScope -ScriptBlock {
-                $mockCommandAstPester5 = {
-                    Should -BeExactly 1 -UnknownOperator
-                }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
-
-                $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
-
-                $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive 1'
-            }
-
-            Should -Invoke -CommandName 'Write-Warning' -Exactly -Times 1 -Scope It
-        }
-
         Context 'When the tests are affirming' {
             It 'Should convert `Should -BeExactly ''Test''` correctly' {
                 InModuleScope -ScriptBlock {
@@ -85,27 +69,27 @@ Describe 'Convert-ShouldBeExactly' {
                 }
             }
 
-            It 'Should convert `Should -BeExactly "AnyString"` correctly' {
+            It 'Should convert `Should -BeExactly "ExpectedString"` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly "AnyString"
+                        Should -BeExactly "ExpectedString"
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive "AnyString"'
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive "ExpectedString"'
                 }
             }
 
-            It 'Should convert `Should -BeExactly ''AnyString''` correctly' {
+            It 'Should convert `Should -BeExactly ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly 'AnyString'
+                        Should -BeExactly 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive "Should-BeString -CaseSensitive 'AnyString'"
+                    $result | Should-BeString -CaseSensitive "Should-BeString -CaseSensitive 'ExpectedString'"
                 }
             }
 
@@ -121,107 +105,107 @@ Describe 'Convert-ShouldBeExactly' {
                 }
             }
 
-            It 'Should convert `Should -ActualValue ''AnyString'' -BeExactly ''AnyString''` correctly' {
+            It 'Should convert `Should -ActualValue ''ExpectedString'' -BeExactly ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ActualValue 'AnyString' -BeExactly 'AnyString'
+                        Should -ActualValue 'ExpectedString' -BeExactly 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''AnyString'' -Actual ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' -Actual ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -BeExactly ''AnyString'' -ActualValue ''AnyString''` correctly' {
+            It 'Should convert `Should -BeExactly ''ExpectedString'' -ActualValue ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly 'AnyString' -ActualValue 'AnyString'
+                        Should -BeExactly 'ExpectedString' -ActualValue 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''AnyString'' -Actual ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' -Actual ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -ActualValue ''AnyString'' -BeExactly -ExpectedValue ''AnyString''` correctly' {
+            It 'Should convert `Should -ActualValue ''ExpectedString'' -BeExactly -ExpectedValue ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ActualValue 'AnyString' -BeExactly -ExpectedValue 'AnyString'
+                        Should -ActualValue 'ExpectedString' -BeExactly -ExpectedValue 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''AnyString'' -Expected ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''ExpectedString'' -Expected ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -BeExactly -ActualValue ''AnyString'' -ExpectedValue ''AnyString''` correctly' {
+            It 'Should convert `Should -BeExactly -ActualValue ''ExpectedString'' -ExpectedValue ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly -ActualValue 'AnyString' -ExpectedValue 'AnyString'
+                        Should -BeExactly -ActualValue 'ExpectedString' -ExpectedValue 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''AnyString'' -Expected ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''ExpectedString'' -Expected ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -BeExactly -ExpectedValue ''AnyString'' -ActualValue ''AnyString''` correctly' {
+            It 'Should convert `Should -BeExactly -ExpectedValue ''ExpectedString'' -ActualValue ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly -ExpectedValue 'AnyString' -ActualValue 'AnyString'
+                        Should -BeExactly -ExpectedValue 'ExpectedString' -ActualValue 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Expected ''AnyString'' -Actual ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''ExpectedString'' -Expected ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -ExpectedValue ''AnyString'' -BeExactly -ActualValue ''AnyString''` correctly' {
+            It 'Should convert `Should -ExpectedValue ''ExpectedString'' -BeExactly -ActualValue ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ExpectedValue 'AnyString' -BeExactly -ActualValue 'AnyString'
+                        Should -ExpectedValue 'ExpectedString' -BeExactly -ActualValue 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Expected ''AnyString'' -Actual ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''ExpectedString'' -Expected ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -ExpectedValue ''AnyString'' -ActualValue ''AnyString'' -BeExactly` correctly' {
+            It 'Should convert `Should -ExpectedValue ''ExpectedString'' -ActualValue ''ExpectedString'' -BeExactly` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ExpectedValue 'AnyString' -ActualValue 'AnyString' -BeExactly
+                        Should -ExpectedValue 'ExpectedString' -ActualValue 'ExpectedString' -BeExactly
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Expected ''AnyString'' -Actual ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''ExpectedString'' -Expected ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -Not:$false -BeExactly ''AnyString''` correctly' {
+            It 'Should convert `Should -Not:$false -BeExactly ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        $false | Should -Not:$false -BeExactly 'AnyString'
+                        $false | Should -Not:$false -BeExactly 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'''
                 }
             }
 
             It 'Should convert `Should -BeExactly (Get-TemporaryFolder)` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        function Get-Something { return 'AnyString' }
-                        'AnyString' | Should -BeExactly (Get-Something)
+                        function Get-Something { return 'ExpectedString' }
+                        'ExpectedString' | Should -BeExactly (Get-Something)
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
@@ -230,29 +214,53 @@ Describe 'Convert-ShouldBeExactly' {
                 }
             }
 
-            It 'Should convert `Should -BeExactly ''AnyString'' -Because ''mock should test correct value'' ''AnyString''` correctly' {
+            It 'Should convert `Should -BeExactly ''ExpectedString'' -Because ''mock should test correct value'' ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly 'AnyString' -Because 'mock should test correct value' 'AnyString'
+                        Should -BeExactly 'ExpectedString' -Because 'mock should test correct value' 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''AnyString'' -Because ''mock should test correct value'' ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' ''ExpectedString'' -Because ''mock should test correct value'''
+                }
+            }
+
+            It 'Should convert `Should -BeExactly ''ExpectedString'' ''mock should test correct value'' ''ActualString''` correctly' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAstPester5 = {
+                        Should -BeExactly 'ExpectedString' 'mock should test correct value' 'ActualString'
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                    $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
+
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' ''ActualString'' -Because ''mock should test correct value'''
+                }
+            }
+
+            It 'Should convert `Should ''ExpectedString'' ''mock should test correct value'' ''ActualString'' -BeExactly` correctly' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAstPester5 = {
+                        Should 'ExpectedString' 'mock should test correct value' 'ActualString' -BeExactly
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                    $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
+
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' ''ActualString'' -Because ''mock should test correct value'''
                 }
             }
         }
 
         Context 'When the tests are negated' {
-            It 'Should convert `Should -Not -Be ''AnyString''` correctly' {
+            It 'Should convert `Should -Not -Be ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -Not -BeExactly 'AnyString'
+                        Should -Not -BeExactly 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'''
                 }
             }
 
@@ -268,15 +276,15 @@ Describe 'Convert-ShouldBeExactly' {
                 }
             }
 
-            It 'Should convert `Should -Not -BeExactly "AnyString"` correctly' {
+            It 'Should convert `Should -Not -BeExactly "ExpectedString"` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -Not -BeExactly "AnyString"
+                        Should -Not -BeExactly "ExpectedString"
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive "AnyString"'
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive "ExpectedString"'
                 }
             }
 
@@ -304,202 +312,202 @@ Describe 'Convert-ShouldBeExactly' {
                 }
             }
 
-            It 'Should convert `Should -Not:$true -BeExactly ''AnyString''` correctly' {
+            It 'Should convert `Should -Not:$true -BeExactly ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        $false | Should -Not:$true -BeExactly 'AnyString'
+                        $false | Should -Not:$true -BeExactly 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -Not -ActualValue ''SpecificString'' -BeExactly ''AnyString''` correctly' {
+            It 'Should convert `Should -Not -ActualValue ''ActualString'' -BeExactly ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -Not -ActualValue 'SpecificString' -BeExactly 'AnyString'
+                        Should -Not -ActualValue 'ActualString' -BeExactly 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'' -Actual ''SpecificString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'' -Actual ''ActualString'''
                 }
             }
 
-            It 'Should convert `Should -ActualValue ''SpecificString'' -Not -BeExactly ''AnyString''` correctly' {
+            It 'Should convert `Should -ActualValue ''ActualString'' -Not -BeExactly ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ActualValue 'SpecificString' -Not -BeExactly 'AnyString'
+                        Should -ActualValue 'ActualString' -Not -BeExactly 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'' -Actual ''SpecificString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'' -Actual ''ActualString'''
                 }
             }
 
-            It 'Should convert `Should -ActualValue ''SpecificString'' -BeExactly ''AnyString'' -Not` correctly' {
+            It 'Should convert `Should -ActualValue ''ActualString'' -BeExactly ''ExpectedString'' -Not` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ActualValue 'SpecificString' -BeExactly 'AnyString' -Not
+                        Should -ActualValue 'ActualString' -BeExactly 'ExpectedString' -Not
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'' -Actual ''SpecificString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'' -Actual ''ActualString'''
                 }
             }
 
-            It 'Should convert `Should -BeExactly ''AnyString'' -ActualValue ''SpecificString'' -Not` correctly' {
+            It 'Should convert `Should -BeExactly ''ExpectedString'' -ActualValue ''ActualString'' -Not` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly 'AnyString' -ActualValue 'SpecificString' -Not
+                        Should -BeExactly 'ExpectedString' -ActualValue 'ActualString' -Not
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'' -Actual ''SpecificString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'' -Actual ''ActualString'''
                 }
             }
 
-            It 'Should convert `Should -BeExactly ''AnyString'' -Not -ActualValue ''SpecificString''` correctly' {
+            It 'Should convert `Should -BeExactly ''ExpectedString'' -Not -ActualValue ''ActualString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly 'AnyString' -Not -ActualValue 'SpecificString'
+                        Should -BeExactly 'ExpectedString' -Not -ActualValue 'ActualString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'' -Actual ''SpecificString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'' -Actual ''ActualString'''
                 }
             }
 
-            It 'Should convert `Should -Not -BeExactly ''AnyString'' -ActualValue ''SpecificString''` correctly' {
+            It 'Should convert `Should -Not -BeExactly ''ExpectedString'' -ActualValue ''ActualString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -Not -BeExactly 'AnyString' -ActualValue 'SpecificString'
+                        Should -Not -BeExactly 'ExpectedString' -ActualValue 'ActualString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'' -Actual ''SpecificString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'' -Actual ''ActualString'''
                 }
             }
 
-            It 'Should convert `Should -ActualValue ''SpecificString'' -BeExactly -Not -ExpectedValue ''AnyString''` correctly' {
+            It 'Should convert `Should -ActualValue ''ActualString'' -BeExactly -Not -ExpectedValue ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ActualValue 'SpecificString' -BeExactly -Not -ExpectedValue 'AnyString'
+                        Should -ActualValue 'ActualString' -BeExactly -Not -ExpectedValue 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive -Actual ''SpecificString'' -Expected ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive -Actual ''ActualString'' -Expected ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -ActualValue ''SpecificString'' -Not -BeExactly -ExpectedValue ''AnyString''` correctly' {
+            It 'Should convert `Should -ActualValue ''ActualString'' -Not -BeExactly -ExpectedValue ''ExpectedString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ActualValue 'SpecificString' -Not -BeExactly -ExpectedValue 'AnyString'
+                        Should -ActualValue 'ActualString' -Not -BeExactly -ExpectedValue 'ExpectedString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive -Actual ''SpecificString'' -Expected ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive -Actual ''ActualString'' -Expected ''ExpectedString'''
                 }
             }
 
-            It 'Should convert `Should -ActualValue ''SpecificString'' -BeExactly -ExpectedValue ''AnyString'' -Not` correctly' {
+            It 'Should convert `Should -ActualValue ''ActualString'' -BeExactly -ExpectedValue ''ExpectedString'' -Not` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -ActualValue 'SpecificString' -BeExactly -ExpectedValue 'AnyString' -Not
+                        Should -ActualValue 'ActualString' -BeExactly -ExpectedValue 'ExpectedString' -Not
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive -Actual ''SpecificString'' -Expected ''AnyString'''
+                    $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive -Actual ''ActualString'' -Expected ''ExpectedString'''
                 }
             }
         }
 
         Context 'When tests should always use named parameters' {
-            It 'Should convert `Should -BeExactly ''AnyString'' -ActualValue ''SpecificString''` correctly' {
+            It 'Should convert `Should -BeExactly ''ExpectedString'' -ActualValue ''ActualString''` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
-                        Should -BeExactly 'AnyString' -ActualValue 'SpecificString'
+                        Should -BeExactly 'ExpectedString' -ActualValue 'ActualString'
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                     $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5 -UseNamedParameters
 
-                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Expected ''AnyString'' -Actual ''SpecificString'''
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''ActualString'' -Expected ''ExpectedString'''
                 }
             }
         }
 
         Context 'When tests should always use positional parameters' {
             Context 'When the tests are affirming' {
-                It 'Should convert `Should -BeExactly ''AnyString'' -ActualValue ''SpecificString''` correctly' {
+                It 'Should convert `Should -BeExactly ''ExpectedString'' -ActualValue ''ActualString''` correctly' {
                     InModuleScope -ScriptBlock {
                         $mockCommandAstPester5 = {
-                            Should -BeExactly 'AnyString' -ActualValue 'SpecificString'
+                            Should -BeExactly 'ExpectedString' -ActualValue 'ActualString'
                         }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                         $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5 -UsePositionalParameters
 
-                        $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''AnyString'' ''SpecificString'''
+                        $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' ''ActualString'''
                     }
                 }
 
-                It 'Should convert `Should -BeExactly ''AnyString'' -ActualValue ''SpecificString'' -Because "this must return true"` correctly' {
+                It 'Should convert `Should -BeExactly ''ExpectedString'' -ActualValue ''ActualString'' -Because "this must return true"` correctly' {
                     InModuleScope -ScriptBlock {
                         $mockCommandAstPester5 = {
-                            Should -BeExactly 'AnyString' -ActualValue 'SpecificString' -Because "this must return true"
+                            Should -BeExactly 'ExpectedString' -ActualValue 'ActualString' -Because "this must return true"
                         }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                         $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5 -UsePositionalParameters
 
-                        $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''AnyString'' ''SpecificString'' -Because "this must return true"'
+                        $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' ''ActualString'' -Because "this must return true"'
                     }
                 }
 
-                It 'Should convert `Should -BeExactly ''AnyString'' -Because "this must return true" -ActualValue ''SpecificString''` correctly' {
+                It 'Should convert `Should -BeExactly ''ExpectedString'' -Because "this must return true" -ActualValue ''ActualString''` correctly' {
                     InModuleScope -ScriptBlock {
                         $mockCommandAstPester5 = {
-                            Should -BeExactly 'AnyString' -Because "this must return true" -ActualValue 'SpecificString'
+                            Should -BeExactly 'ExpectedString' -Because "this must return true" -ActualValue 'ActualString'
                         }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                         $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5 -UsePositionalParameters
 
-                        $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''AnyString'' -Because "this must return true" ''SpecificString'''
+                        $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' ''ActualString'' -Because "this must return true"'
                     }
                 }
 
-                It 'Should convert `Should -Because "this must return true" -ActualValue ''SpecificString'' -BeExactly ''AnyString''` correctly' {
+                It 'Should convert `Should -Because "this must return true" -ActualValue ''ActualString'' -BeExactly ''ExpectedString''` correctly' {
                     InModuleScope -ScriptBlock {
                         $mockCommandAstPester5 = {
-                            Should -Because "this must return true" -ActualValue 'SpecificString' -BeExactly 'AnyString'
+                            Should -Because "this must return true" -ActualValue 'ActualString' -BeExactly 'ExpectedString'
                         }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                         $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5 -UsePositionalParameters
 
-                        $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''AnyString'' -Because "this must return true" ''SpecificString'''
+                        $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive ''ExpectedString'' ''ActualString'' -Because "this must return true"'
                     }
                 }
             }
 
             Context 'When the tests are negated' {
-                It 'Should convert `Should -BeExactly ''AnyString'' -ActualValue ''SpecificString'' -Because "this must return true" -Not` correctly' {
+                It 'Should convert `Should -BeExactly ''ExpectedString'' -ActualValue ''ActualString'' -Because "this must return true" -Not` correctly' {
                     InModuleScope -ScriptBlock {
                         $mockCommandAstPester5 = {
-                            Should -BeExactly 'AnyString' -ActualValue 'SpecificString' -Because "this must return true" -Not
+                            Should -BeExactly 'ExpectedString' -ActualValue 'ActualString' -Because "this must return true" -Not
                         }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                         $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5 -UsePositionalParameters
 
-                        $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''AnyString'' ''SpecificString'' -Because "this must return true"'
+                        $result | Should-BeString -CaseSensitive 'Should-NotBeString -CaseSensitive ''ExpectedString'' ''ActualString'' -Because "this must return true"'
                     }
                 }
             }

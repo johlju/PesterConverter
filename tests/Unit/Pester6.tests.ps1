@@ -36,6 +36,10 @@ Describe 'Pester6 Syntax' {
         It 'Test Should-Be with both named and positional parameters' {
             Should-Be $false -Because 'mock should test correct value' $false
         }
+
+        It 'Test `Should-Be -Actual $true $true` works' {
+            Should-Be -Actual $true $true
+        }
     }
 
     Context 'Should-BeString' {

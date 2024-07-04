@@ -62,6 +62,14 @@ function Convert-PesterSyntax
 
     begin
     {
+        $assertBoundParameterParameters = @{
+            BoundParameterList = $PSBoundParameters
+            MutuallyExclusiveList1 = @('UseNamedParameters')
+            MutuallyExclusiveList2 = @('UsePositionalParameters')
+        }
+
+        Assert-BoundParameter @assertBoundParameterParameters
+
         $convertParameters = @{} + $PSBoundParameters
         $convertParameters.Remove('Path')
 
@@ -118,6 +126,21 @@ function Convert-PesterSyntax
                             'BeExactly'
                             {
                                 $newExtentText = Convert-ShouldBeExactly -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                            }
+
+                            'BeTrue'
+                            {
+                                $newExtentText = Convert-ShouldBeTrue -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                            }
+
+                            'BeFalse'
+                            {
+                                $newExtentText = Convert-ShouldBeFalse -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                            }
+
+                            'BeNullOrEmpty'
+                            {
+                                $newExtentText = Convert-ShouldBeNullOrEmpty -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
                             }
 
                             default

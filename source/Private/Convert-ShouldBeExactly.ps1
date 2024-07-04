@@ -23,17 +23,16 @@
         $commandAst = [System.Management.Automation.Language.Parser]::ParseInput('Should -BeExactly "Test"')
         Convert-ShouldBeExactly -CommandAst $commandAst -Pester6
 
-        This example converts the `Should -BeExactly "Test"` command to Pester 6 syntax
-        without using command aliases.
+        This example converts the `Should -BeExactly "Test"` command to Pester 6 syntax.
 
     .NOTES
         Pester 5 Syntax:
-            Should -BeExactly [-ActualValue <Object>] [-Not] [[-ExpectedValue] <Object>] [-Because <Object>]
+            Should -BeExactly [[-ActualValue] <Object>] [-Not] [[-ExpectedValue] <Object>] [-Because <Object>]
 
             Positional parameters:
-                Position 1: ExceptedValue
+                Position 1: ExpectedValue
                 Position 2: Because
-                Position 2: ActualValue
+                Position 3: ActualValue
 
         Pester 6 Syntax:
             Should-BeString [[-Actual] <Object>] [[-Expected] <String>] [-Because <String>] [-CaseSensitive] [-IgnoreWhitespace]
@@ -66,6 +65,16 @@ function Convert-ShouldBeExactly
         $UsePositionalParameters
     )
 
+    $assertBoundParameterParameters = @{
+        BoundParameterList = $PSBoundParameters
+        MutuallyExclusiveList1 = @('UseNamedParameters')
+        MutuallyExclusiveList2 = @('UsePositionalParameters')
+    }
+
+    Assert-BoundParameter @assertBoundParameterParameters
+
+    Write-Debug -Message ('Parsing the command AST: {0}' -f $CommandAst.Extent.Text)
+
     # Determine if the command is negated
     $isNegated = Test-PesterCommandNegated -CommandAst $CommandAst
 
@@ -89,152 +98,83 @@ function Convert-ShouldBeExactly
         # Always add the `-CaseSensitive` parameter since BeExactly was case-sensitive.
         $newExtentText += ' -CaseSensitive'
 
-        $commandElement = $CommandAst.CommandElements |
-            Where-Object -FilterScript {
-                -not (
-                    $_ -is [System.Management.Automation.Language.StringConstantExpressionAst] `
-                    -and $_.Extent.Text -eq 'Should'
-                )
+        $getPesterCommandParameterParameters = @{
+            CommandAst = $CommandAst
+            CommandName = 'Should'
+            IgnoreParameter = 'BeExactly', 'Not'
+            PositionalParameter = 'ExpectedValue', 'Because', 'ActualValue'
+        }
+
+        $commandParameters = Get-PesterCommandParameter @getPesterCommandParameterParameters
+
+        # Parameter 'Because' is only supported as named parameter in Pester 6 syntax.
+        if ($commandParameters.Because)
+        {
+            $commandParameters.Because.Positional = $false
+        }
+
+        # Determine if named or positional parameters should be forcibly used
+        if ($UseNamedParameters.IsPresent)
+        {
+            if ($commandParameters.ExpectedValue)
+            {
+                $commandParameters.ExpectedValue.Positional = $false
             }
 
-        <#
-            Returns true if the first command element is positional (is of type
-            System.Management.Automation.Language.VariableExpressionAst)
-        #>
-        #$firstElementIsPositional = Test-CommandElementIsPositional -CommandAst $CommandAst -First
-
-        # TODO: Can the code below be turned into a function, maybe refactor the used one above?
-
-        <#
-            Search for the parameter name "BeExactly" in the command elements and if the
-            next element in the command elements array is a variable expression or
-            constant expression, assign the next elements value to a variable
-            $positionalExpectedValue.
-
-            Returns -1 if parameter 'BeExactly' is not found.
-        #>
-        $parameterIndex = $commandElement.IndexOf(
-            (
-                $commandElement |
-                    Where-Object -FilterScript {
-                        $_ -is [System.Management.Automation.Language.CommandParameterAst] `
-                        -and $_.ParameterName -eq 'BeExactly'
-                    }
-            )
-        )
-
-        $positionalExpectedValue = $null
-        $positionalValueElement = $null
-
-        if ($parameterIndex -ne -1)
-        {
-            $nextElement = $commandElement[$parameterIndex + 1]
-
-            if ($nextElement -is [System.Management.Automation.Language.ConstantExpressionAst] `
-                -or $nextElement -is [System.Management.Automation.Language.VariableExpressionAst] `
-                -or $nextElement -is [System.Management.Automation.Language.ParenExpressionAst])
+            if ($commandParameters.ActualValue)
             {
-                $positionalExpectedValue = $nextElement.Extent.Text
-                $positionalValueElement = $nextElement
+                $commandParameters.ActualValue.Positional = $false
+            }
+        }
+        elseif ($UsePositionalParameters.IsPresent)
+        {
+            if ($commandParameters.ExpectedValue)
+            {
+                $commandParameters.ExpectedValue.Positional = $true
+            }
+
+            if ($commandParameters.ActualValue)
+            {
+                $commandParameters.ActualValue.Positional = $true
             }
         }
 
-        if ($positionalExpectedValue)
-        {
-            if ($UsePositionalParameters.IsPresent)
-            {
-                # Force usage of positional parameters.
-                $newExtentText += " $positionalExpectedValue"
-            }
-            elseif ($UseNamedParameters.IsPresent)
-            {
-                # Force usage of named parameters.
-                $newExtentText += " -Expected $positionalExpectedValue"
-            }
-            else
-            {
-                # Default is to do it as it was coded before.
-                $newExtentText += " $positionalExpectedValue"
-            }
-        }
+        $newExtentText += $commandParameters.ExpectedValue.Positional ? (' {0}' -f $commandParameters.ExpectedValue.ExtentText) : ''
+        $newExtentText += $commandParameters.ActualValue.Positional ? (' {0}' -f $commandParameters.ActualValue.ExtentText) : ''
 
-        foreach ($currentCommandElement in $commandElement)
+        # This handles the named parameters in the command elements, added in alphabetical order.
+        foreach ($currentParameter in $commandParameters.Keys | Sort-Object)
         {
-            # Skip the element if it is the one that was used as the positional parameter.
-            if ($positionalValueElement -and $currentCommandElement.Equals($positionalValueElement))
+            if ($commandParameters.$currentParameter.Positional -eq $true)
             {
                 continue
             }
 
-            switch ($currentCommandElement)
+            switch ($currentParameter)
             {
-                {$_ -is [System.Management.Automation.Language.CommandParameterAst] }
+                'ActualValue'
                 {
-                    $parameterName = $currentCommandElement.ParameterName
-                    #$argument = $currentCommandElement.Argument.Extent.Text
+                    $parameterName = 'Actual'
 
-                    # Parameters to be ignored.
-                    if ($parameterName -in @('BeExactly', 'Not'))
-                    {
-                        continue
-                    }
-
-                    switch ($parameterName)
-                    {
-                        'ActualValue'
-                        {
-                            # If positional parameters were requested, the parameter name should be ignored.
-                            if (-not $UsePositionalParameters.IsPresent)
-                            {
-                                $newExtentText += ' -Actual'
-                            }
-
-                            break
-                        }
-
-                        'ExpectedValue'
-                        {
-                            $newExtentText += ' -Expected'
-
-                            break
-                        }
-
-                        'Because'
-                        {
-                            $newExtentText += ' -Because'
-
-                            break
-                        }
-
-                        # 'Not'
-                        # {
-                        #     $newExtentText += " -Not:$argument"
-                        #
-                        #     break
-                        # }
-
-                        default
-                        {
-                            Write-Warning -Message "Unsupported command parameter '$parameterName' in extent '$($currentCommandElement.Extent.Text)'"
-                        }
-                    }
+                    break
                 }
 
+                'ExpectedValue'
                 {
-                    $_ -is [System.Management.Automation.Language.ConstantExpressionAst] `
-                    -or $_ -is [System.Management.Automation.Language.VariableExpressionAst] `
-                    -or $_ -is [System.Management.Automation.Language.ParenExpressionAst]
-                }
-                {
+                    $parameterName = 'Expected'
 
-                    $newExtentText += " $($currentCommandElement.Extent.Text)"
+                    break
                 }
 
                 default
                 {
-                    Write-Warning -Message "Unsupported command element type: $($currentCommandElement.GetType().Name)"
+                    $parameterName = $currentParameter
+
+                    break
                 }
             }
+
+            $newExtentText += ' -{0} {1}' -f $parameterName, $commandParameters.$currentParameter.ExtentText
         }
     }
 

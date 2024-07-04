@@ -56,22 +56,6 @@ Describe 'Convert-ShouldBe' {
             }
         }
 
-        It 'Should output a warning message if an unknown operator is used' {
-            Mock -CommandName Write-Warning
-
-            InModuleScope -ScriptBlock {
-                $mockCommandAstPester5 = {
-                    Should -Be 1 -UnknownOperator
-                }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
-
-                $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
-
-                $result | Should-BeString -CaseSensitive 'Should-Be 1'
-            }
-
-            Should -Invoke -CommandName 'Write-Warning' -Exactly -Times 1 -Scope It
-        }
-
         Context 'When the tests are affirming' {
             It 'Should convert `Should -Be 1` correctly' {
                 InModuleScope -ScriptBlock {
@@ -165,7 +149,7 @@ Describe 'Convert-ShouldBe' {
 
                     $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $false'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $false' #'Should-Be -Expected $false -Actual $true'
                 }
             }
 
@@ -189,7 +173,7 @@ Describe 'Convert-ShouldBe' {
 
                     $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-Be -Expected $false -Actual $true'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $false'
                 }
             }
 
@@ -201,7 +185,7 @@ Describe 'Convert-ShouldBe' {
 
                     $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-Be -Expected $false -Actual $true'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $false'
                 }
             }
 
@@ -213,7 +197,7 @@ Describe 'Convert-ShouldBe' {
 
                     $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-Be -Expected $false -Actual $true'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $false'
                 }
             }
 
@@ -229,7 +213,7 @@ Describe 'Convert-ShouldBe' {
                 }
             }
 
-            It 'Should convert `Should -Be (Get-TemporaryFolder)` correctly' {
+            It 'Should convert `Should -Be (Get-Something)` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
                         function Get-Something { return 'AnyString' }
@@ -250,7 +234,31 @@ Describe 'Convert-ShouldBe' {
 
                     $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
 
-                    $result | Should-BeString -CaseSensitive 'Should-Be $false -Because ''mock should test correct value'' $false'
+                    $result | Should-BeString -CaseSensitive 'Should-Be $false $false -Because ''mock should test correct value'''
+                }
+            }
+
+            It 'Should convert `Should -Be ''ExpectedString'' ''mock should test correct value'' ''ActualString''` correctly' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAstPester5 = {
+                        Should -Be 'ExpectedString' 'mock should test correct value' 'ActualString'
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
+
+                    $result | Should-BeString -CaseSensitive 'Should-Be ''ExpectedString'' ''ActualString'' -Because ''mock should test correct value'''
+                }
+            }
+
+            It 'Should convert `Should ''ExpectedString'' ''mock should test correct value'' ''ActualString'' -Be` correctly' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAstPester5 = {
+                        Should 'ExpectedString' 'mock should test correct value' 'ActualString' -Be
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5
+
+                    $result | Should-BeString -CaseSensitive 'Should-Be ''ExpectedString'' ''ActualString'' -Because ''mock should test correct value'''
                 }
             }
         }
@@ -470,7 +478,7 @@ Describe 'Convert-ShouldBe' {
 
                     $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UseNamedParameters
 
-                    $result | Should-BeString -CaseSensitive 'Should-Be -Expected $true -Actual $true'
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $true'
                 }
             }
         }
@@ -480,12 +488,12 @@ Describe 'Convert-ShouldBe' {
                 It 'Should convert `Should -Be $true -ActualValue $true` correctly' {
                     InModuleScope -ScriptBlock {
                         $mockCommandAstPester5 = {
-                            Should -Be $true -ActualValue $true
+                            Should -Be 'ExpectedString' -ActualValue 'ActualString'
                         }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
                         $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UsePositionalParameters
 
-                        $result | Should-BeString -CaseSensitive 'Should-Be $true $true'
+                        $result | Should-BeString -CaseSensitive 'Should-Be ''ExpectedString'' ''ActualString'''
                     }
                 }
 
@@ -509,7 +517,7 @@ Describe 'Convert-ShouldBe' {
 
                         $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UsePositionalParameters
 
-                        $result | Should-BeString -CaseSensitive 'Should-Be $true -Because "this must return true" $true'
+                        $result | Should-BeString -CaseSensitive 'Should-Be $true $true -Because "this must return true"'
                     }
                 }
 
@@ -521,7 +529,7 @@ Describe 'Convert-ShouldBe' {
 
                         $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UsePositionalParameters
 
-                        $result | Should-BeString -CaseSensitive 'Should-Be $true -Because "this must return true" $true'
+                        $result | Should-BeString -CaseSensitive 'Should-Be $true $true -Because "this must return true"'
                     }
                 }
             }

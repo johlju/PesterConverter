@@ -23,8 +23,7 @@
         $commandAst = [System.Management.Automation.Language.Parser]::ParseInput('Should -Throw "Test"')
         Convert-ShouldThrow -CommandAst $commandAst -Pester6
 
-        This example converts the `Should -Throw "Test"` command to Pester 6 syntax
-        without using command aliases.
+        This example converts the `Should -Throw "Test"` command to Pester 6 syntax.
 
     .NOTES
         Pester 5 Syntax:
