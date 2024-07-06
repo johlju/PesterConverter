@@ -154,7 +154,7 @@ Describe 'Convert-ShouldThrow' {
                         Should -Not -Throw
                     }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
 
-                    { Convert-ShouldThrow -CommandAst $mockCommandAstPester5 } | Should-Throw -ExceptionType ([System.Exception]) -ExceptionMessage 'Convert-ShouldThrow should not be called with a negated command. Call Convert-ShouldNotThrow instead.'
+                    { Convert-ShouldThrow -CommandAst $mockCommandAstPester5 } | Should-Throw -ExceptionType ([System.Exception]) -ExceptionMessage 'Convert-ShouldThrow should not be called with a negation parameter. Call Convert-ShouldNotThrow instead.'
                 }
             }
         }

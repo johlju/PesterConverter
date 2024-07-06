@@ -149,8 +149,9 @@ function Convert-PesterSyntax
 
                                 if ($isNegated)
                                 {
-                                    Write-Verbose -Message 'NotImplemented: Should -Not -Throw' -Verbose
-                                    #$newExtentText = Convert-ShouldNotThrow -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                                    $newExtentText = Convert-ShouldNotThrow -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                    # TODO: $newExtentText should replace the entire commandAst.Parent.Extent.Text.
                                 }
                                 else
                                 {

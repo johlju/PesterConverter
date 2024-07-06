@@ -1,9 +1,9 @@
 <#
     .SYNOPSIS
-        Converts a command `Should -Throw` to the specified Pester syntax.
+        Converts a command `Should -Not -Throw` to the specified Pester syntax.
 
     .DESCRIPTION
-        The Convert-ShouldBe function is used to convert a command `Should -Throw` to
+        The Convert-ShouldBe function is used to convert a command `Should -Not -Throw` to
         the specified Pester syntax.
 
     .PARAMETER CommandAst
@@ -20,10 +20,10 @@
         where supported.
 
     .EXAMPLE
-        $commandAst = [System.Management.Automation.Language.Parser]::ParseInput('Should -Throw "Test"')
+        $commandAst = [System.Management.Automation.Language.Parser]::ParseInput('Should -Not -Throw')
         Convert-ShouldThrow -CommandAst $commandAst -Pester6
 
-        This example converts the `Should -Throw "Test"` command to Pester 6 syntax.
+        This example converts the `Should -Not -Throw` command to Pester 6 syntax.
 
     .NOTES
         Pester 5 Syntax:
@@ -36,17 +36,19 @@
                 Position 4: Because
 
         Pester 6 Syntax:
-            There are no command to call, in v6 the scriptblock should be called
-            using the call operator, e.g: $null = & (<actualvalue>)
+            There are no Should-* command to call in v6. In v6 the scriptblock
+            should be called either directly or using the call operator, e.g:
+
+            $null = & (<ActualValue>)
 
         Conversion notes:
-            From Frode: $null = & (<actualvalue>) should work for variables,
+            From Frode: "$null = & (<actualvalue>) should work for variables,
             script blocks and expressions (note parentheses). Running the code
             directly will send data to StandardOutput in the Test-object. Not a
             big deal unless there's a lot of output, but might as well assign it
-            to null like -Throw.
+            to null like -Throw."
 #>
-function Convert-ShouldThrow
+function Convert-ShouldNotThrow
 {
     [CmdletBinding()]
     [OutputType([System.String])]
@@ -89,143 +91,26 @@ function Convert-ShouldThrow
     {
         Write-Debug -Message ('Converting from Pester v{0} to Pester v6 syntax.' -f $sourceSyntaxVersion)
 
-        # Add the correct Pester command based on negation
         if ($isNegated)
         {
-            # TODO: This might need to be moved to a command Convert-ShouldNotThrow, and if Convert-ShouldThrow it should throw. Convert-PesterSyntax will need to check for negation as the parent AST need to be changed.
-            # TODO: Must extract the scriptblock from the CommandAst extent, the scriptblock is passed as the parameter ActualValue or passed thru the pipeline.
-            $newExtentText = Get-ShouldThrowScriptBlock -CommandAst $CommandAst -ParameterName 'ActualValue' -ParsePipeline
+            <#
+                Must extract the scriptblock from the CommandAst extent, the scriptblock
+                is passed as the parameter ActualValue or passed thru the pipeline.
+            #>
+            $newExtentText = '& ({0})' -f (Get-ShouldThrowScriptBlock -CommandAst $CommandAst -ParameterName 'ActualValue' -ParsePipeline)
         }
         else
         {
-            #$shouldThrowNotImplementedMessage = $script:localizedData.ShouldThrow_NotImplemented
+            #$shouldNotThrowNotImplementedMessage = $script:localizedData.ShouldNotThrow_NotImplemented
 
             $PSCmdlet.ThrowTerminatingError(
                 [System.Management.Automation.ErrorRecord]::new(
-                    'Convert-ShouldThrow should not be called with without negated command. Call Convert-ShouldThrow instead.', #$shouldThrowNotImplementedMessage,
-                    'CST0001', # cspell: disable-line
+                    'Convert-ShouldNotThrow should not be called without a negation parameter. Call Convert-ShouldThrow instead.', #$shouldNotThrowNotImplementedMessage,
+                    'CSNT0001', # cspell: disable-line
                     [System.Management.Automation.ErrorCategory]::NotImplemented,
                     $CommandAst.Extent.Text
                 )
             )
-        }
-
-        $getPesterCommandParameterParameters = @{
-            CommandAst = $CommandAst
-            CommandName = 'Should'
-            IgnoreParameter = @(
-                'Throw'
-                'Not'
-                'PassThru'
-            )
-            PositionalParameter = @(
-                'ExceptionMessage'
-                'ErrorId'
-                'ExceptionType'
-                'Because'
-            )
-            NamedParameter = @(
-                'ActualValue'
-            )
-        }
-
-        $commandParameters = Get-PesterCommandParameter @getPesterCommandParameterParameters
-
-        # # Parameter 'Because' is only supported as named parameter in Pester 6 syntax.
-        # if ($commandParameters.Because)
-        # {
-        #     $commandParameters.Because.Positional = $false
-        # }
-
-        # # Determine if named or positional parameters should be forcibly used
-        if ($UseNamedParameters.IsPresent)
-        {
-            if ($commandParameters.ExceptionMessage)
-            {
-                $commandParameters.ExceptionMessage.Positional = $false
-            }
-
-            if ($commandParameters.ErrorId)
-            {
-                $commandParameters.ErrorId.Positional = $false
-            }
-
-            if ($commandParameters.ExceptionType)
-            {
-                $commandParameters.ExceptionType.Positional = $false
-            }
-
-            if ($commandParameters.Because)
-            {
-                $commandParameters.Because.Positional = $false
-            }
-        }
-        elseif ($UsePositionalParameters.IsPresent)
-        {
-            if ($commandParameters.ExceptionMessage)
-            {
-                $commandParameters.ExceptionMessage.Positional = $true
-            }
-
-            if ($commandParameters.ErrorId)
-            {
-                $commandParameters.ErrorId.Positional = $true
-            }
-
-            if ($commandParameters.ExceptionType)
-            {
-                $commandParameters.ExceptionType.Positional = $true
-            }
-
-            if ($commandParameters.Because)
-            {
-                $commandParameters.Because.Positional = $true
-            }
-        }
-
-        $newExtentText += $commandParameters.ExceptionMessage.Positional ? (' {0}' -f $commandParameters.ExceptionMessage.ExtentText) : ''
-        $newExtentText += $commandParameters.ErrorId.Positional ? (' {0}' -f $commandParameters.ErrorId.ExtentText) : ''
-        $newExtentText += $commandParameters.ExceptionType.Positional ? (' {0}' -f $commandParameters.ExceptionType.ExtentText) : ''
-        $newExtentText += $commandParameters.Because.Positional ? (' {0}' -f $commandParameters.Because.ExtentText) : ''
-
-        # Holds the the new parameter names so they can be added in alphabetical order.
-        $parameterNames = @()
-
-        foreach ($currentParameter in $commandParameters.Keys)
-        {
-            if ($commandParameters.$currentParameter.Positional -eq $true)
-            {
-                continue
-            }
-
-            switch ($currentParameter)
-            {
-                'ErrorId'
-                {
-                    $parameterNames += @{
-                        FullyQualifiedErrorId = 'ErrorId'
-                    }
-
-                    break
-                }
-
-                default
-                {
-                    $parameterNames += @{
-                        $currentParameter = $currentParameter
-                    }
-
-                    break
-                }
-            }
-        }
-
-        # This handles the named parameters in the command elements, added in alphabetical order.
-        foreach ($currentParameter in $parameterNames.Keys | Sort-Object)
-        {
-            $originalParameterName = $parameterNames.$currentParameter
-
-            $newExtentText += ' -{0} {1}' -f $currentParameter, $commandParameters.$originalParameterName.ExtentText
         }
     }
 

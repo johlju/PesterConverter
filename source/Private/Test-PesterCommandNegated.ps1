@@ -39,6 +39,12 @@ function Test-PesterCommandNegated
         $CommandAst
     )
 
+    if ($CommandAst.Parent -is [System.Management.Automation.Language.PipelineAst])
+    {
+        # Assuming the last element in the pipeline is the command we are interested in.
+        $CommandAst = $CommandAst.Parent.PipelineElements[-1]
+    }
+
     $negateCommandParameterAst = $CommandAst.CommandElements |
         Where-Object -FilterScript {
             $_ -is [System.Management.Automation.Language.CommandParameterAst] `

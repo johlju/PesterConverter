@@ -30,6 +30,8 @@
 #>
 function Get-ShouldThrowScriptBlock
 {
+    [CmdletBinding()]
+    [OutputType([System.String])]
     param
     (
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
@@ -81,18 +83,15 @@ function Get-ShouldThrowScriptBlock
         # Attempt to find a pipeline before the CommandAst in the script
         $pipelineAst = $CommandAst.Parent
 
-        while ($pipelineAst -and -not $pipelineAst -is [System.Management.Automation.Language.PipelineAst])
+        # Only get the scriptblock if the pipeline has more than one element
+        if ($pipelineAst -is [System.Management.Automation.Language.PipelineAst] -and $pipelineAst.PipelineElements.Count -gt 1)
         {
-            $pipelineAst = $pipelineAst.Parent
-        }
-
-        if ($pipelineAst)
-        {
-            # If a pipeline is found, assume the scriptblock is the last element in the pipeline
-            $scriptBlock = $pipelineAst.PipelineElements[-1].ScriptBlock
+            # If a pipeline is found, get all the pipeline elements except the one that is the CommandAst
+            $lastPipelineElement = $pipelineAst.PipelineElements[-1]
+            $scriptBlock = $pipelineAst.Extent.Text.Replace($lastPipelineElement.Extent.Text, '').TrimEnd(" |`r`n")
         }
     }
 
     # Return the scriptblock's text if found, otherwise return null
-    return $scriptBlock?.Extent.Text
+    return $scriptBlock
 }

@@ -113,7 +113,7 @@ function Convert-ShouldThrow
 
             $PSCmdlet.ThrowTerminatingError(
                 [System.Management.Automation.ErrorRecord]::new(
-                    'Convert-ShouldThrow should not be called with a negated command. Call Convert-ShouldNotThrow instead.', #$shouldThrowNotImplementedMessage,
+                    'Convert-ShouldThrow should not be called with a negation parameter. Call Convert-ShouldNotThrow instead.', #$shouldThrowNotImplementedMessage,
                     'CST0001', # cspell: disable-line
                     [System.Management.Automation.ErrorCategory]::NotImplemented,
                     $CommandAst.Extent.Text
