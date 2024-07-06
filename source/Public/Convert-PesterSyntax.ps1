@@ -143,6 +143,22 @@ function Convert-PesterSyntax
                                 $newExtentText = Convert-ShouldBeNullOrEmpty -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
                             }
 
+                            'Throw'
+                            {
+                                $isNegated = Test-PesterCommandNegated -CommandAst $commandAst
+
+                                if ($isNegated)
+                                {
+                                    Write-Verbose -Message 'NotImplemented: Should -Not -Throw' -Verbose
+                                    #$newExtentText = Convert-ShouldNotThrow -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                                }
+                                else
+                                {
+                                    $newExtentText = Convert-ShouldThrow -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                                }
+                            }
+
+
                             default
                             {
                                 Write-Warning -Message ('Unsupported command operator ''{0}'' in extent `{1}`.' -f $operatorName, $commandAst.Extent.Text)

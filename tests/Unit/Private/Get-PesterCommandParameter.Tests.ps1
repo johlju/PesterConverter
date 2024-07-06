@@ -54,8 +54,23 @@ Describe 'Get-PesterCommandParameter' {
             }
         }
 
+        Context 'When there are no other properties than the operator name' {
+            It 'Should return no properties' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAst = {
+                        Should -Be
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                    $result = Get-PesterCommandParameter -CommandAst $mockCommandAst @mockDefaultParameters
+
+                    $result | Should-HaveType -Expected ([System.Collections.Hashtable])
+                    $result.Keys.Count | Should -Be 0
+                }
+            }
+        }
+
         Context 'When there are no positional parameters' {
-            It 'Should returns $null' {
+            It 'Should return no properties' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAst = {
                         Should -Be -Not

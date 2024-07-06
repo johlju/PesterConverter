@@ -21,6 +21,93 @@ Describe 'Pester6 Syntax' {
 
             Should-Throw $mockScript ([Microsoft.PowerShell.Commands.WriteErrorException]) 'hej' 'MyErrorId'
         }
+
+        # Not currently supported in Pester 6 syntax due to ScriptBlock being first positional parameter.
+        # It 'Should throw when using pipeline input and the usage of positional parameters' {
+        #     {
+        #         Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        #     } | Should-Throw ([Microsoft.PowerShell.Commands.WriteErrorException]) 'MockErrorMessage' 'MockErrorId' 'MockBecauseString'
+        # }
+
+        It 'Should throw when using only positional parameters' {
+            Should-Throw {
+                Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+            } ([Microsoft.PowerShell.Commands.WriteErrorException]) 'MockErrorMessage' 'MockErrorId' 'MockBecauseString'
+        }
+
+        # This is not possible in Pester 6 syntax due to ScriptBlock being first positional parameter.
+        # It 'Should throw when using only one positional parameters' {
+        #     {
+        #         Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        #     } | Should-Throw 'MockErrorMessage'
+        # }
+
+        It 'Should not throw, passing to ForEach-Object' {
+            {
+                Write-Verbose -Message 'Some message'
+                #Get-Something
+                #Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+            } | ForEach-Object -Process { & $_ } | Out-Null
+        }
+
+        It 'Should not throw, calling Ast.GetScriptBlock().Invoke()' {
+            {
+                Write-Verbose -Message 'Some message'
+                #Get-Something
+                #Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+            }.Ast.GetScriptBlock().Invoke()
+        }
+
+        It 'Should not throw, without any scriptblock' {
+            Write-Verbose -Message 'Some message'
+            #Get-Something
+            #Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        }
+
+        It 'Should not throw, call scriptblock in variable' {
+            $scriptBlock = {
+                Write-Verbose -Message 'Some message'
+                #Get-Something
+                #Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+            }
+
+            # Should use parenthesis
+            $null = & $scriptBlock
+        }
+
+        # Not possible in Pester 6 syntax
+        # It 'Should not throw, call two scriptblock assigned to variables' {
+        #     $scriptBlock1 = {
+        #         Write-Verbose -Message 'Some message' -Verbose
+        #         #Get-Something
+        #         #Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        #     }
+
+        #     $scriptBlock2 = {
+        #         Write-Verbose -Message 'Some message' -Verbose
+        #         #Get-Something
+        #         #Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        #     }
+
+        #     # Must use parenthesis
+        #     & (($scriptBlock1), ($scriptBlock2))
+        # }
+
+        It 'Should not throw, call scriptblock within parenthesis using call operator' {
+            $null = & ({
+                Write-Verbose -Message 'Some message'
+                #Get-Something
+                #Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+            })
+        }
+
+        It 'Should not throw, call scriptblock using call operator' {
+            $null = & {
+                Write-Verbose -Message 'Some message'
+                #Get-Something
+                #Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+            }
+        }
     }
 
     Context 'Should-Be' {

@@ -36,32 +36,15 @@
                 Position 4: Because
 
         Pester 6 Syntax:
-            Should-Throw [-ScriptBlock] <ScriptBlock> [[-ExceptionType] <Type>] [[-ExceptionMessage] <String>] [[-FullyQualifiedErrorId] <String>] [-AllowNonTerminatingError] [[-Because] <String>]
-
-            Positional parameters:
-                Position 1: ScriptBlock
-                Position 2: ExceptionType
-                Position 3: ExceptionMessage
-                Position 4: FullyQualifiedErrorId
-                Position 5: Because
+            There are no command to call, in v6 the scriptblock should be called
+            using the call operator, e.g: $null = & (<actualvalue>)
 
         Conversion notes:
-            If the Pester 5 syntax does not have ActualValue as named parameter
-            then it is not possible to use positional parameters, if there is
-            pipeline input then it is not possible to convert to positional parameters.
-
-            Pester 5 syntax Pos 1 must be converted to Pos 3 in Pester 6 syntax
-            Pester 5 syntax Pos 2 must be converted to Pos 4 in Pester 6 syntax
-            Pester 5 syntax Pos 3 must be converted to Pos 2 in Pester 6 syntax
-            Pester 5 syntax Pos 4 must be converted to Pos 5 in Pester 6 syntax
-
-            PassThru is the default in Pester 6, so it can be ignored in the conversion.
-            But must be handled if it can have negative impact were it was not used
-            before.
-
-            TODO: The positional parameters in v6 are not in the same order as in v5.
-            The code below assume they will be the same in a future v6 alpha. If not
-            the code below need to be change to force named parameters.
+            From Frode: $null = & (<actualvalue>) should work for variables,
+            script blocks and expressions (note parentheses). Running the code
+            directly will send data to StandardOutput in the Test-object. Not a
+            big deal unless there's a lot of output, but might as well assign it
+            to null like -Throw.
 #>
 function Convert-ShouldThrow
 {
@@ -109,20 +92,22 @@ function Convert-ShouldThrow
         # Add the correct Pester command based on negation
         if ($isNegated)
         {
+            # TODO: This might need to be moved to a command Convert-ShouldNotThrow, and if Convert-ShouldThrow it should throw. Convert-PesterSyntax will need to check for negation as the parent AST need to be changed.
+            # TODO: Must extract the scriptblock from the CommandAst extent, the scriptblock is passed as the parameter ActualValue or passed thru the pipeline.
+            $newExtentText = Get-ShouldThrowScriptBlock -CommandAst $CommandAst -ParameterName 'ActualValue' -ParsePipeline
+        }
+        else
+        {
             #$shouldThrowNotImplementedMessage = $script:localizedData.ShouldThrow_NotImplemented
 
             $PSCmdlet.ThrowTerminatingError(
                 [System.Management.Automation.ErrorRecord]::new(
-                    'Convert-ShouldThrow should not be called with a negated command. Call Convert-ShouldNotThrow instead.', #$shouldThrowNotImplementedMessage,
+                    'Convert-ShouldThrow should not be called with without negated command. Call Convert-ShouldThrow instead.', #$shouldThrowNotImplementedMessage,
                     'CST0001', # cspell: disable-line
                     [System.Management.Automation.ErrorCategory]::NotImplemented,
                     $CommandAst.Extent.Text
                 )
             )
-        }
-        else
-        {
-            $newExtentText = 'Should-Throw'
         }
 
         $getPesterCommandParameterParameters = @{
@@ -146,7 +131,6 @@ function Convert-ShouldThrow
 
         $commandParameters = Get-PesterCommandParameter @getPesterCommandParameterParameters
 
-        # TODO: Remove this unless some parameters must be forcibly to named parameters.
         # # Parameter 'Because' is only supported as named parameter in Pester 6 syntax.
         # if ($commandParameters.Because)
         # {
@@ -197,18 +181,12 @@ function Convert-ShouldThrow
             {
                 $commandParameters.Because.Positional = $true
             }
-
-            if ($commandParameters.ActualValue)
-            {
-                $commandParameters.ActualValue.Positional = $true
-            }
         }
 
         $newExtentText += $commandParameters.ExceptionMessage.Positional ? (' {0}' -f $commandParameters.ExceptionMessage.ExtentText) : ''
         $newExtentText += $commandParameters.ErrorId.Positional ? (' {0}' -f $commandParameters.ErrorId.ExtentText) : ''
         $newExtentText += $commandParameters.ExceptionType.Positional ? (' {0}' -f $commandParameters.ExceptionType.ExtentText) : ''
         $newExtentText += $commandParameters.Because.Positional ? (' {0}' -f $commandParameters.Because.ExtentText) : ''
-        $newExtentText += $commandParameters.ActualValue.Positional ? (' {0}' -f $commandParameters.ActualValue.ExtentText) : ''
 
         # Holds the the new parameter names so they can be added in alphabetical order.
         $parameterNames = @()
@@ -226,15 +204,6 @@ function Convert-ShouldThrow
                 {
                     $parameterNames += @{
                         FullyQualifiedErrorId = 'ErrorId'
-                    }
-
-                    break
-                }
-
-                'ActualValue'
-                {
-                    $parameterNames += @{
-                        ScriptBlock = 'ActualValue'
                     }
 
                     break

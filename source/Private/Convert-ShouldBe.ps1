@@ -139,8 +139,10 @@ function Convert-ShouldBe
         $newExtentText += $commandParameters.ExpectedValue.Positional ? (' {0}' -f $commandParameters.ExpectedValue.ExtentText) : ''
         $newExtentText += $commandParameters.ActualValue.Positional ? (' {0}' -f $commandParameters.ActualValue.ExtentText) : ''
 
-        # This handles the named parameters in the command elements, added in alphabetical order.
-        foreach ($currentParameter in $commandParameters.Keys | Sort-Object)
+        # Holds the the new parameter names so they can be added in alphabetical order.
+        $parameterNames = @()
+
+        foreach ($currentParameter in $commandParameters.Keys)
         {
             if ($commandParameters.$currentParameter.Positional -eq $true)
             {
@@ -151,34 +153,39 @@ function Convert-ShouldBe
             {
                 'ActualValue'
                 {
-                    $parameterName = 'Actual'
+                    $parameterNames += @{
+                        Actual = 'ActualValue'
+                    }
 
                     break
                 }
 
                 'ExpectedValue'
                 {
-                    $parameterName = 'Expected'
+                    $parameterNames += @{
+                        Expected = 'ExpectedValue'
+                    }
 
                     break
                 }
 
                 default
                 {
-                    $parameterName = $currentParameter
+                    $parameterNames += @{
+                        $currentParameter = $currentParameter
+                    }
 
                     break
                 }
-
-                # 'Not'
-                # {
-                #     $newExtentText += " -Not:$argument"
-                #
-                #     break
-                # }
             }
+        }
 
-            $newExtentText += ' -{0} {1}' -f $parameterName, $commandParameters.$currentParameter.ExtentText
+        # This handles the named parameters in the command elements, added in alphabetical order.
+        foreach ($currentParameter in $parameterNames.Keys | Sort-Object)
+        {
+            $originalParameterName = $parameterNames.$currentParameter
+
+            $newExtentText += ' -{0} {1}' -f $currentParameter, $commandParameters.$originalParameterName.ExtentText
         }
     }
 

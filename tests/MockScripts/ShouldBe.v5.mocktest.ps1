@@ -158,8 +158,33 @@ Describe 'ShouldBe' {
     }
 
     It 'Should throw' {
-        { 1+1 } | Should -Throw -Because 'Expected to throw' -ErrorId 'hej' -ExpectedMessage 'hej' -ExceptionType ([Exception]) -Not
+        {
+            Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        } | Should -Throw 'MockErrorMessage'
     }
+
+    It 'Should throw' {
+        {
+            Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        } | Should -Throw 'MockErrorMessage' 'MockErrorId'
+    }
+
+    It 'Should throw' {
+        {
+            Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        } | Should -Throw 'MockErrorMessage' 'MockErrorId' ([System.Exception])
+    }
+
+    It 'Should throw' {
+        {
+            Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        } | Should -Throw 'MockErrorMessage' 'MockErrorId' ([System.Exception]) 'BecauseString'
+    }
+
+
+    # It 'Should throw' {
+    #     { 1+1 } | Should -Throw -Because 'Expected to throw' -ErrorId 'hej' -ExpectedMessage 'hej' -ExceptionType ([Exception]) -Not
+    # }
 
     It 'Should throw' {
         $errorPassThru = ({ throw 'hej' } | Should -Throw -Because 'Expected to throw' -ErrorId 'hej' -ExpectedMessage 'hej' -ExceptionType ([Exception]) -PassThru)
@@ -174,10 +199,14 @@ Describe 'ShouldBe' {
          Should -Throw 'hej' -ActualValue { throw 'hej' }
     }
 
-    It 'Should throw' {
+    It 'Should throw using only positional parameters' {
         {
-            Write-Error -Message 'hej' -ErrorId 'MyErrorId' -Category InvalidOperation -TargetObject 'MyTargetObject' -ErrorAction 'Stop'
-        } | Should -Throw 'hej' 'MyErrorId' ([Microsoft.PowerShell.Commands.WriteErrorException]) 'the mock error should throw correct error'
+            Write-Error -Message 'MockErrorMessage' -ErrorId 'MockErrorId' -Category 'InvalidOperation' -TargetObject 'MockTargetObject' -ErrorAction 'Stop'
+        } | Should -Throw 'MockErrorMessage' 'MockErrorId' ([Microsoft.PowerShell.Commands.WriteErrorException]) 'MockBecauseString'
     }
 
+    # Not possible without curly braces (script block)
+    # It 'Should throw using only named parameters' {
+    #     (1 + 1) | Should -Not -Throw -ExpectedMessage 'MockErrorMessage' -ErrorId 'MockErrorId' -ExceptionType ([Microsoft.PowerShell.Commands.WriteErrorException]) -Because 'MockBecauseString'
+    # }
 }
