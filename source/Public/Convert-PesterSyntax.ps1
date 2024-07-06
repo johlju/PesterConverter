@@ -143,6 +143,11 @@ function Convert-PesterSyntax
                                 $newExtentText = Convert-ShouldBeNullOrEmpty -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
                             }
 
+                            'BeOfType'
+                            {
+                                $newExtentText = Convert-ShouldBeOfType -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+                            }
+
                             'Throw'
                             {
                                 $isNegated = Test-PesterCommandNegated -CommandAst $commandAst

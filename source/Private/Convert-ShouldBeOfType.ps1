@@ -1,10 +1,10 @@
 <#
     .SYNOPSIS
-        Converts a command `Should -BeFalse` to the specified Pester syntax.
+        Converts a command `Should -BeOfType` to the specified Pester syntax.
 
     .DESCRIPTION
-        The Convert-ShouldBeFalse function is used to convert a command `Should -BeFalse` to
-        the specified Pester syntax.
+        The Convert-ShouldBe function is used to convert a command `Should -BeOfType`
+        to the specified Pester syntax.
 
     .PARAMETER CommandAst
         The CommandAst object representing the command to be converted.
@@ -20,30 +20,42 @@
         where supported.
 
     .EXAMPLE
-        $commandAst = [System.Management.Automation.Language.Parser]::ParseInput('Should -BeFalse')
-        Convert-ShouldBeFalse -CommandAst $commandAst -Pester6
+        $commandAst = [System.Management.Automation.Language.Parser]::ParseInput('Should -BeOfType [System.String]')
+        Convert-ShouldBeOfType -CommandAst $commandAst -Pester6
 
-        This example converts the `Should -BeFalse` command to Pester 6 syntax.
+        This example converts the `Should -BeOfType [System.String]` command to Pester 6 syntax.
 
     .NOTES
         Pester 5 Syntax:
-            Should -BeFalse [[-ActualValue] <Object>] [[-Because] <Object>] [-Not]
+            Should -BeOfType [[-ActualValue] <Object>] [[-ExpectedType] <Object>] [[-Because] <string>] [-Not]
 
             Positional parameters:
-                Position 1: Because
-                Position 2: ActualValue
-
-        Pester 6 Syntax:
-            Should-BeFalse [[-Actual] <Object>] [[-Because] <String>]
-
-            Positional parameters:
-                Position 1: Actual
+                Position 1: ExpectedValue
                 Position 2: Because
 
+        Pester 6 Syntax:
+            Should-HaveType [[-Actual] <Object>] [-Expected] <Type> [-Because <String>]
+            Should-NotBe [[-Actual] <Object>] [-Expected] <Object> [-Because <String>]
+
+            Positional parameters:
+                Position 1: Expected
+                Position 2: Actual
+
         Conversion notes:
-            If the Pester 5 syntax is negated it must be converted to Should-BeTrue.
+            The expected value should be surrounded by parenthesis after conversion
+            in v6, e.g. `[System.String]` -> `([System.String])`.
+
+            The `-ActualValue` parameter is only supported as a named parameter in
+            v5 even if syntax says otherwise. If ActualValue is used it will concatenate
+            with the Because value and wrongly always return an array. Did not find
+            a way to prevent that.
+
+            The `-Not` parameter is not supported in v6. It should be changed to the
+            command `Should-NotHaveType`.
+
+            The `-Because` parameter is only supported as a named parameter in v6.
 #>
-function Convert-ShouldBeFalse
+function Convert-ShouldBeOfType
 {
     [CmdletBinding()]
     [OutputType([System.String])]
@@ -79,7 +91,7 @@ function Convert-ShouldBeFalse
     # Determine if the command is negated
     $isNegated = Test-PesterCommandNegated -CommandAst $CommandAst
 
-    $sourceSyntaxVersion = Get-PesterCommandSyntaxVersion -CommandAst $CommandAst -CommandName 'Should' -ParameterName 'BeFalse'
+    $sourceSyntaxVersion = Get-PesterCommandSyntaxVersion -CommandAst $CommandAst -CommandName 'Should' -ParameterName 'BeOfType'
 
     # Parse the command elements and convert them to Pester 6 syntax
     if ($PSCmdlet.ParameterSetName -eq 'Pester6')
@@ -89,50 +101,66 @@ function Convert-ShouldBeFalse
         # Add the correct Pester command based on negation
         if ($isNegated)
         {
-            $newExtentText = 'Should-BeTrue'
+            $newExtentText = 'Should-NotHaveType'
         }
         else
         {
-            $newExtentText = 'Should-BeFalse'
+            $newExtentText = 'Should-HaveType'
         }
 
         $getPesterCommandParameterParameters = @{
             CommandAst = $CommandAst
             CommandName = 'Should'
-            IgnoreParameter = 'BeFalse', 'Not'
-            PositionalParameter = 'Because', 'ActualValue'
+            IgnoreParameter = @(
+                'BeOfType'
+                'HaveType'
+                'Not'
+            )
+            PositionalParameter = @(
+                'ExpectedValue'
+                'Because'
+            )
+            NamedParameter = @(
+                'ActualValue'
+            )
         }
 
         $commandParameters = Get-PesterCommandParameter @getPesterCommandParameterParameters
 
+        # Parameter 'Because' is only supported as named parameter in Pester 6 syntax.
+        if ($commandParameters.Because)
+        {
+            $commandParameters.Because.Positional = $false
+        }
+
         # Determine if named or positional parameters should be forcibly used
         if ($UseNamedParameters.IsPresent)
         {
+            if ($commandParameters.ExpectedValue)
+            {
+                $commandParameters.ExpectedValue.Positional = $false
+            }
+
             if ($commandParameters.ActualValue)
             {
                 $commandParameters.ActualValue.Positional = $false
             }
-
-            if ($commandParameters.Because)
-            {
-                $commandParameters.Because.Positional = $false
-            }
         }
         elseif ($UsePositionalParameters.IsPresent)
         {
+            if ($commandParameters.ExpectedValue)
+            {
+                $commandParameters.ExpectedValue.Positional = $true
+            }
+
             if ($commandParameters.ActualValue)
             {
                 $commandParameters.ActualValue.Positional = $true
             }
-
-            if ($commandParameters.Because)
-            {
-                $commandParameters.Because.Positional = $true
-            }
         }
 
+        $newExtentText += $commandParameters.ExpectedValue.Positional ? (' ({0})' -f $commandParameters.ExpectedValue.ExtentText) : ''
         $newExtentText += $commandParameters.ActualValue.Positional ? (' {0}' -f $commandParameters.ActualValue.ExtentText) : ''
-        $newExtentText += $commandParameters.Because.Positional ? (' {0}' -f $commandParameters.Because.ExtentText) : ''
 
         # Holds the new parameter names so they can be added in alphabetical order.
         $parameterNames = @()
@@ -150,6 +178,15 @@ function Convert-ShouldBeFalse
                 {
                     $parameterNames += @{
                         Actual = 'ActualValue'
+                    }
+
+                    break
+                }
+
+                'ExpectedValue'
+                {
+                    $parameterNames += @{
+                        Expected = 'ExpectedValue'
                     }
 
                     break

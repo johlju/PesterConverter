@@ -433,6 +433,20 @@ Describe 'Convert-ShouldBeExactly' {
             }
         }
 
+        Context 'When alias operator name is used' {
+            It 'Should convert `Should -EQ $true -ActualValue $true` correctly' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAstPester5 = {
+                        Should -CEQ 'ExpectedString' -ActualValue 'ActualString'
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                    $result = Convert-ShouldBeExactly -CommandAst $mockCommandAstPester5 -UseNamedParameters
+
+                    $result | Should-BeString -CaseSensitive 'Should-BeString -CaseSensitive -Actual ''ActualString'' -Expected ''ExpectedString'''
+                }
+            }
+        }
+
         Context 'When tests should always use named parameters' {
             It 'Should convert `Should -BeExactly ''ExpectedString'' -ActualValue ''ActualString''` correctly' {
                 InModuleScope -ScriptBlock {

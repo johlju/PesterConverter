@@ -98,8 +98,16 @@ function Convert-ShouldBe
         $getPesterCommandParameterParameters = @{
             CommandAst = $CommandAst
             CommandName = 'Should'
-            IgnoreParameter = 'Be', 'Not'
-            PositionalParameter = 'ExpectedValue', 'Because', 'ActualValue'
+            IgnoreParameter = @(
+                'Be'
+                'EQ'
+                'Not'
+            )
+            PositionalParameter = @(
+                'ExpectedValue'
+                'Because'
+                'ActualValue'
+            )
         }
 
         $commandParameters = Get-PesterCommandParameter @getPesterCommandParameterParameters
@@ -139,7 +147,7 @@ function Convert-ShouldBe
         $newExtentText += $commandParameters.ExpectedValue.Positional ? (' {0}' -f $commandParameters.ExpectedValue.ExtentText) : ''
         $newExtentText += $commandParameters.ActualValue.Positional ? (' {0}' -f $commandParameters.ActualValue.ExtentText) : ''
 
-        # Holds the the new parameter names so they can be added in alphabetical order.
+        # Holds the new parameter names so they can be added in alphabetical order.
         $parameterNames = @()
 
         foreach ($currentParameter in $commandParameters.Keys)

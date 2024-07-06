@@ -210,7 +210,7 @@ function Convert-ShouldThrow
         $newExtentText += $commandParameters.Because.Positional ? (' {0}' -f $commandParameters.Because.ExtentText) : ''
         $newExtentText += $commandParameters.ActualValue.Positional ? (' {0}' -f $commandParameters.ActualValue.ExtentText) : ''
 
-        # Holds the the new parameter names so they can be added in alphabetical order.
+        # Holds the new parameter names so they can be added in alphabetical order.
         $parameterNames = @()
 
         foreach ($currentParameter in $commandParameters.Keys)

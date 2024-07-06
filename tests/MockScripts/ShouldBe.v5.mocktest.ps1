@@ -209,4 +209,23 @@ Describe 'ShouldBe' {
     # It 'Should throw using only named parameters' {
     #     (1 + 1) | Should -Not -Throw -ExpectedMessage 'MockErrorMessage' -ErrorId 'MockErrorId' -ExceptionType ([Microsoft.PowerShell.Commands.WriteErrorException]) -Because 'MockBecauseString'
     # }
+
+    # Not supported in Pester 5
+    # It 'Should BeOfType' {
+    #     Should [System.String] $null 'ActualValue' -BeOfType
+    # }
+
+    # Not supported in Pester 5
+    # It 'Should BeOfType' {
+    #     Should [System.String] 'ActualValue' 'mock must have correct type' -BeOfType
+    # }
+
+    It 'Should BeOfType' {
+        Should [System.String] 'mock must have correct type' -ActualValue 'ActualValue' -BeOfType
+    }
+
+    It 'Should BeOfType' {
+        'ActualValue' | Should [System.String] 'mock must have correct type' -BeOfType
+    }
+
 }

@@ -483,6 +483,20 @@ Describe 'Convert-ShouldBe' {
             }
         }
 
+        Context 'When alias operator name is used' {
+            It 'Should convert `Should -EQ $true -ActualValue $true` correctly' {
+                InModuleScope -ScriptBlock {
+                    $mockCommandAstPester5 = {
+                        Should -EQ $true -ActualValue $true
+                    }.Ast.Find({ $args[0] -is [System.Management.Automation.Language.CommandAst] }, $false)
+
+                    $result = Convert-ShouldBe -CommandAst $mockCommandAstPester5 -UseNamedParameters
+
+                    $result | Should-BeString -CaseSensitive 'Should-Be -Actual $true -Expected $true'
+                }
+            }
+        }
+
         Context 'When tests should always use positional parameters' {
             Context 'When the tests are affirming' {
                 It 'Should convert `Should -Be $true -ActualValue $true` correctly' {
