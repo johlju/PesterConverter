@@ -159,7 +159,14 @@ function Convert-ShouldBeOfType
             }
         }
 
-        $newExtentText += $commandParameters.ExpectedValue.Positional ? (' ({0})' -f $commandParameters.ExpectedValue.ExtentText) : ''
+        # '[System.String]' -match '^\[.+\]$'
+        if ($commandParameters.ExpectedValue.Positional)
+        {
+            # Add the expected value in parenthesis only if the extent text is a type defined in square brackets.
+            $extentTextFormat = $commandParameters.ExpectedValue.ExtentText -match '^\[.+\]$' ? ' ({0})' : ' {0}'
+            $newExtentText += $extentTextFormat -f $commandParameters.ExpectedValue.ExtentText
+        }
+
         $newExtentText += $commandParameters.ActualValue.Positional ? (' {0}' -f $commandParameters.ActualValue.ExtentText) : ''
 
         # Holds the new parameter names so they can be added in alphabetical order.
@@ -208,7 +215,10 @@ function Convert-ShouldBeOfType
         {
             $originalParameterName = $parameterNames.$currentParameter
 
-            $newExtentText += ' -{0} {1}' -f $currentParameter, $commandParameters.$originalParameterName.ExtentText
+            # Add the expected value in parenthesis only if the extent text is a type defined in square brackets.
+            $extentTextFormat = $originalParameterName -eq 'ExpectedValue' -and $commandParameters.$originalParameterName.ExtentText -match '^\[.+\]$' ? '({1})' : '{1}'
+
+            $newExtentText += " -{0} $extentTextFormat" -f $currentParameter, $commandParameters.$originalParameterName.ExtentText
         }
     }
 

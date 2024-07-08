@@ -154,4 +154,51 @@ Describe 'Pester6 Syntax' {
             Should-BeTrue $true 'true should be true'
         }
     }
+
+    Context 'Should-HaveType' {
+        It 'Test Should-HaveType with named parameters' {
+            Should-HaveType -Actual 'a' -Expected 'System.String' -Because 'a should be of type System.String'
+        }
+
+        It 'Test Should-HaveType with positional parameters' {
+            Should-HaveType 'System.String' 'a' -Because 'a should be of type System.String'
+        }
+
+        It 'Test Should-HaveType with pipeline input' {
+            'a' | Should-HaveType 'System.String' -Because 'a should be of type System.String'
+        }
+
+        It 'Test Should-HaveType with  input' {
+            'a' | Should-HaveType ([System.String]) -Because 'a should be of type System.String'
+        }
+
+        # This is not supported
+        # It 'Test Should-HaveType with pipeline input' {
+        #     'a' | Should-HaveType [System.String] -Because 'a should be of type System.String'
+        # }
+    }
+
+    Context 'v5 Should -Contain' {
+        It 'Should contain a specific string, using named parameters' {
+            'A','b','c' | Should-Any -FilterScript { $_ | Should-Be -Expected 'a' }
+        }
+
+        It 'Should contain a specific string, using positional parameters' {
+            'A','b','c' | Should-Any { $_ | Should-Be 'a' }
+        }
+    }
+
+    Context 'Should-ContainCollection' {
+        It 'Test Should-ContainCollection with named parameters' {
+            Should-ContainCollection -Actual @('a', 'b', 'c') -Expected 'a' -Because 'a should be in the collection'
+        }
+
+        It 'Test Should-ContainCollection with positional parameters' {
+            Should-ContainCollection 'a' @('a', 'b', 'c') -Because 'a should be in the collection'
+        }
+
+        It 'Test Should-ContainCollection with pipeline input' {
+            @('a', 'b', 'c') | Should-ContainCollection 'a' -Because 'a should be in the collection'
+        }
+    }
 }
