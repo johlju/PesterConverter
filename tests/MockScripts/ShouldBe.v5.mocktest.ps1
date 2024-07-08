@@ -228,4 +228,10 @@ Describe 'ShouldBe' {
         'ActualValue' | Should [System.String] 'mock must have correct type' -BeOfType
     }
 
+    It 'Should Match' {
+         Should -Match '^\[.+\]$' 'must match regex' '[Actual]'
+    }
+    It 'Should MatchExactly' {
+         Should -MatchExactly '^\[.+\]$' 'must match regex' '[Actual]'
+   }
 }

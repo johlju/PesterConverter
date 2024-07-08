@@ -201,7 +201,7 @@ Describe 'Convert-ShouldBeExactly' {
                 }
             }
 
-            It 'Should convert `Should -BeExactly (Get-TemporaryFolder)` correctly' {
+            It 'Should convert `Should -BeExactly (Get-Something)` correctly' {
                 InModuleScope -ScriptBlock {
                     $mockCommandAstPester5 = {
                         function Get-Something { return 'ExpectedString' }
