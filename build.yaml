@@ -144,8 +144,8 @@ GitHubConfig:
     - 'CHANGELOG.md'
   ReleaseAssets:
     - output/WikiContent.zip
-  GitHubConfigUserName: dscbot # cSpell: disable-line
-  GitHubConfigUserEmail: dsccommunity@outlook.com
+  GitHubConfigUserName: viscalyxbot # cSpell: disable-line
+  GitHubConfigUserEmail: viscalyxbot@viscalyx.se
   UpdateChangelogOnPrerelease: false
 
 ####################################################
