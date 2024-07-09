@@ -121,31 +121,43 @@ function Convert-PesterSyntax
                             'Be'
                             {
                                 $newExtentText = Convert-ShouldBe -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
                             }
 
                             'BeExactly'
                             {
                                 $newExtentText = Convert-ShouldBeExactly -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
                             }
 
                             'BeTrue'
                             {
                                 $newExtentText = Convert-ShouldBeTrue -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
                             }
 
                             'BeFalse'
                             {
                                 $newExtentText = Convert-ShouldBeFalse -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
                             }
 
                             'BeNullOrEmpty'
                             {
                                 $newExtentText = Convert-ShouldBeNullOrEmpty -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
                             }
 
                             'BeOfType'
                             {
                                 $newExtentText = Convert-ShouldBeOfType -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
                             }
 
                             'Throw'
@@ -162,8 +174,30 @@ function Convert-PesterSyntax
                                 {
                                     $newExtentText = Convert-ShouldThrow -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
                                 }
+
+                                break
                             }
 
+                            'Match'
+                            {
+                                $newExtentText = Convert-ShouldMatch -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
+                            }
+
+                            'MatchExactly'
+                            {
+                                $newExtentText = Convert-ShouldMatchExactly -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
+                            }
+
+                            'Contain'
+                            {
+                                $newExtentText = Convert-ShouldContain -CommandAst $commandAst @convertParameters -ErrorAction 'Stop'
+
+                                break
+                            }
 
                             default
                             {

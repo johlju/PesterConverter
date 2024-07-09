@@ -231,7 +231,17 @@ Describe 'ShouldBe' {
     It 'Should Match' {
          Should -Match '^\[.+\]$' 'must match regex' '[Actual]'
     }
+
     It 'Should MatchExactly' {
          Should -MatchExactly '^\[.+\]$' 'must match regex' '[Actual]'
-   }
+    }
+
+    It 'Should Contain' {
+        @('a', 'Expected') | Should -Contain 'Expected' 'must contain correct value'
+    }
+
+    # This does not work. It is not possible to use the -ActualValue positional parameter with the -Contain parameter
+    # It 'Should Contain' {
+    #     Should -Contain 'Expected' 'must contain correct value' @('a', 'Expected')
+    # }
 }
