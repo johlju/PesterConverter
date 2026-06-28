@@ -29,7 +29,7 @@ ConvertFrom-StringData @'
     Convert_PesterSyntax_Debug_ScriptBlockAst = Parsing the script block AST: {0}
     Convert_PesterSyntax_Debug_FoundShouldCommand = Found {0} `Should` command(s) in file '{1}'.
     Convert_PesterSyntax_Warning_UnsupportedCommandOperator = Unsupported command operator '{0}' in extent: `{1}`
-    Convert_PesterSyntax_MissingSupportedCommandOperator = Did not found any of the supported command operators in extent: `{0}`
+    Convert_PesterSyntax_MissingSupportedCommandOperator = Get-ShouldCommandOperatorName do not yet support the Should operator that was found in extent, or the operator name is short form instead of the full operator name: `{0}`
     Convert_PesterSyntax_NoPesterCommand = No supported Pester commands found in '{0}'.
     Convert_PesterSyntax_OutputPathDoesNotExist = The output path '{0}' does not exist. Please specify an existing path.
     Convert_PesterSyntax_OutputPathIsNotDirectory = The output path '{0}' is not a directory. Please specify a directory path.
